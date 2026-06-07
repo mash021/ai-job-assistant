@@ -1,0 +1,6 @@
+# Exclude local-only files so the frontend image stays small and builds fast.
+node_modules
+.next
+npm-debug.log*
+.env*.local
+.git

@@ -1,0 +1,65 @@
+# ---------------------------------------------------------------------------
+# AI Job Assistant — docker-compose
+#
+# Orchestrates the three services that make up the local environment:
+#   - db        : PostgreSQL database (used by later epics)
+#   - backend   : FastAPI API exposing /health
+#   - frontend  : Next.js app that calls the backend
+#
+# Run everything with:   docker-compose up --build
+# ---------------------------------------------------------------------------
+
+services:
+  # ----- PostgreSQL database -----
+  # Included now so the data layer is ready for Epic 2+. Nothing connects to it
+  # yet, but it starts cleanly and persists data in a named volume.
+  db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-postgres}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-postgres}
+      POSTGRES_DB: ${POSTGRES_DB:-ai_job_assistant}
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      # Lets other services wait until the database is actually ready.
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-postgres}"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  # ----- FastAPI backend -----
+  backend:
+    build: ./backend
+    ports:
+      - "8000:8000"
+    environment:
+      DATABASE_URL: ${DATABASE_URL:-postgresql://postgres:postgres@db:5432/ai_job_assistant}
+      AI_PROVIDER: ${AI_PROVIDER:-mock}
+    volumes:
+      # Mount source for live reload during development.
+      - ./backend:/app
+    depends_on:
+      db:
+        condition: service_healthy
+
+  # ----- Next.js frontend -----
+  frontend:
+    build: ./frontend
+    ports:
+      - "3000:3000"
+    environment:
+      # The browser reaches the backend via the host-published port.
+      NEXT_PUBLIC_BACKEND_URL: ${NEXT_PUBLIC_BACKEND_URL:-http://localhost:8000}
+    volumes:
+      # Mount source for hot-reload, but keep the container's node_modules.
+      - ./frontend:/app
+      - /app/node_modules
+    depends_on:
+      - backend
+
+# Named volume so database data survives `docker-compose down` (without -v).
+volumes:
+  postgres_data:

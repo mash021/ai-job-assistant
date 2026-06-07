@@ -1,0 +1,9 @@
+# Keep the backend image small and builds fast by excluding local cruft.
+__pycache__/
+*.pyc
+*.pyo
+.venv/
+venv/
+.env
+.pytest_cache/
+.mypy_cache/
