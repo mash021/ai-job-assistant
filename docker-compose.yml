@@ -38,6 +38,8 @@ services:
     environment:
       DATABASE_URL: ${DATABASE_URL:-postgresql://postgres:postgres@db:5432/ai_job_assistant}
       AI_PROVIDER: ${AI_PROVIDER:-mock}
+      BACKEND_CORS_ORIGINS: ${BACKEND_CORS_ORIGINS:-*}
+      LOG_LEVEL: ${LOG_LEVEL:-INFO}
     volumes:
       # Mount source for live reload during development.
       - ./backend:/app

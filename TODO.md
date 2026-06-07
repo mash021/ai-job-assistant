@@ -36,18 +36,18 @@ A detailed, epic-based checklist for tracking progress. Each **epic** maps rough
 
 ---
 
-## Epic 2 — Backend Foundation (FastAPI)
+## Epic 2 — Backend Foundation (FastAPI) ✅
 
 **Goal:** A structured, testable API skeleton.
 
-- [ ] Initialize FastAPI app (`app/main.py`)
-- [ ] Set up project config/settings (`app/core/`)
-- [ ] Configure SQLAlchemy session and DB connection (`app/db/`)
-- [ ] Set up database migrations (e.g. Alembic)
-- [ ] Define the `Comparison` ORM model
-- [ ] Define Pydantic request/response schemas
-- [ ] Add CORS configuration for the frontend
-- [ ] Set up logging
+- [x] Initialize FastAPI app (`app/main.py`)
+- [x] Set up project config/settings (`app/core/`)
+- [x] Configure SQLAlchemy session and DB connection (`app/db/`)
+- [x] Set up database migrations (Alembic + initial migration)
+- [x] Define the `Comparison` ORM model
+- [x] Define Pydantic request/response schemas
+- [x] Add CORS configuration for the frontend (driven by settings)
+- [x] Set up logging
 
 ---
 
@@ -173,7 +173,7 @@ A detailed, epic-based checklist for tracking progress. Each **epic** maps rough
 | ----------------------------- | ------------- |
 | 0 — Planning & Setup          | Done          |
 | 1 — Infrastructure & DevOps   | Done          |
-| 2 — Backend Foundation        | Not started   |
+| 2 — Backend Foundation        | Done          |
 | 3 — Frontend Foundation       | Not started   |
 | 4 — Core Inputs & Parsing     | Not started   |
 | 5 — AI Provider Layer         | Not started   |

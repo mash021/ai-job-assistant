@@ -135,13 +135,22 @@ ai-job-assistant/
 ├── backend/                   # FastAPI + Python
 │   ├── app/
 │   │   ├── main.py            # ✅ FastAPI entry point + /health endpoint
+│   │   ├── core/              # ✅ Config (settings) + logging
+│   │   │   ├── config.py      # ✅ Env-driven settings
+│   │   │   └── logging.py     # ✅ Logging setup
+│   │   ├── db/                # ✅ SQLAlchemy base, session, get_db
+│   │   │   ├── base.py        # ✅ Declarative Base
+│   │   │   ├── base_all.py    # ✅ Imports all models for Alembic
+│   │   │   └── session.py     # ✅ Engine + SessionLocal + get_db
+│   │   ├── models/            # ✅ SQLAlchemy ORM models
+│   │   │   └── comparison.py  # ✅ Comparison model
+│   │   ├── schemas/           # ✅ Pydantic request/response schemas
+│   │   │   └── comparison.py  # ✅ Comparison schemas
 │   │   ├── api/               #    Routers/endpoints (later)
-│   │   ├── core/              #    Config, settings, security (later)
-│   │   ├── models/            #    SQLAlchemy ORM models (later)
-│   │   ├── schemas/           #    Pydantic request/response schemas (later)
 │   │   ├── services/          #    Business logic (parsing, scoring) (later)
-│   │   ├── ai/                #    Provider abstraction (later)
-│   │   └── db/                #    Session, migrations (later)
+│   │   └── ai/                #    Provider abstraction (later)
+│   ├── alembic/               # ✅ Migration environment + versions/
+│   ├── alembic.ini            # ✅ Alembic config
 │   ├── tests/                 #    Pytest test suite (later)
 │   ├── requirements.txt       # ✅
 │   └── Dockerfile             # ✅
@@ -251,6 +260,54 @@ curl http://localhost:8000/health
 > dev` inside `frontend/`), a `package-lock.json` will be generated for you.
 
 ---
+
+## Backend Setup & Database Migrations
+
+The backend is a structured FastAPI app (Epic 2). Configuration is read from
+environment variables via `app/core/config.py`, the database layer uses
+SQLAlchemy, and schema changes are managed with **Alembic**.
+
+### Applying migrations (with Docker — recommended)
+
+After the stack is up (`docker-compose up --build`), create the database tables
+by running Alembic **inside** the backend container:
+
+```bash
+# Apply all migrations against the running PostgreSQL service
+docker-compose exec backend alembic upgrade head
+```
+
+This creates the `comparisons` table. Verify it:
+
+```bash
+docker-compose exec db psql -U postgres -d ai_job_assistant -c "\dt"
+```
+
+### Creating a new migration (after changing models)
+
+```bash
+# Autogenerate a migration from model changes, then apply it
+docker-compose exec backend alembic revision --autogenerate -m "describe change"
+docker-compose exec backend alembic upgrade head
+```
+
+### Running the backend without Docker (optional)
+
+```bash
+cd backend
+python -m venv .venv && source .venv/bin/activate
+pip install -r requirements.txt
+
+# Point at a reachable PostgreSQL instance
+export DATABASE_URL=postgresql://postgres:postgres@localhost:5432/ai_job_assistant
+
+alembic upgrade head
+uvicorn app.main:app --reload
+```
+
+> **Note:** The backend image gained new dependencies in Epic 2 (SQLAlchemy,
+> Alembic, psycopg2). If you already had the stack running from Epic 1, rebuild
+> it with `docker-compose up --build` so the backend container installs them.
 
 ## AI Providers
 
