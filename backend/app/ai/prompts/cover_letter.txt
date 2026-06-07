@@ -1,0 +1,17 @@
+Task: Write a tailored, professional cover letter for this candidate applying to
+this role.
+
+Guidelines:
+  - 3–4 short paragraphs.
+  - Highlight the candidate's most relevant strengths for THIS job.
+  - Be warm but professional; avoid clichés and exaggeration.
+  - Do not fabricate experience not present in the resume.
+  - End with a polite closing and a "[Your Name]" placeholder.
+
+--- RESUME ---
+{resume_text}
+
+--- JOB DESCRIPTION ---
+{job_description_text}
+
+Respond with ONLY the cover letter text.

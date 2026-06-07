@@ -1,0 +1,14 @@
+Task: Identify skills required by the job description that are missing or weak in
+the resume.
+
+Focus on concrete, named skills (languages, frameworks, tools, methodologies).
+Do not list skills the candidate clearly already has.
+
+--- RESUME ---
+{resume_text}
+
+--- JOB DESCRIPTION ---
+{job_description_text}
+
+Respond with a JSON array of skill strings, e.g. ["Kubernetes", "GraphQL"].
+If there are no significant gaps, respond with an empty array: [].

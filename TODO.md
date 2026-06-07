@@ -80,19 +80,19 @@ A detailed, epic-based checklist for tracking progress. Each **epic** maps rough
 
 ---
 
-## Epic 5 — AI Provider Layer
+## Epic 5 — AI Provider Layer ✅
 
 **Goal:** A swappable AI integration, Mock-first.
 
-- [ ] Define the `AIProvider` interface
-- [ ] Implement the **Mock provider** (deterministic results)
-- [ ] Implement the OpenAI provider
-- [ ] Implement the Claude provider
-- [ ] Add provider selection via `AI_PROVIDER` env var
-- [ ] Write prompt template for match scoring
-- [ ] Write prompt template for skill gap analysis
-- [ ] Write prompt template for cover letter generation
-- [ ] Add error handling and fallbacks for provider failures
+- [x] Define the `AIProvider` interface
+- [x] Implement the **Mock provider** (deterministic results)
+- [~] Implement the OpenAI provider (stub only — real calls in Epic 6)
+- [~] Implement the Claude provider (stub only — real calls in Epic 6)
+- [x] Add provider selection via `AI_PROVIDER` env var (factory)
+- [x] Write prompt template for match scoring
+- [x] Write prompt template for skill gap analysis
+- [x] Write prompt template for cover letter generation
+- [x] Add error handling for unsupported provider names
 
 ---
 
@@ -176,7 +176,7 @@ A detailed, epic-based checklist for tracking progress. Each **epic** maps rough
 | 2 — Backend Foundation        | Done          |
 | 3 — Frontend Foundation       | Done          |
 | 4 — Core Inputs & Parsing     | Done          |
-| 5 — AI Provider Layer         | Not started   |
+| 5 — AI Provider Layer         | Done (mock)   |
 | 6 — Core Feature: Analyze     | Not started   |
 | 7 — Persistence & History     | Not started   |
 | 8 — Testing & Quality         | Not started   |

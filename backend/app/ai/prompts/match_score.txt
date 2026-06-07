@@ -1,0 +1,16 @@
+Task: Rate how well the resume matches the job description.
+
+Return a single integer from 0 to 100, where:
+  - 0   = no relevant overlap
+  - 50  = partial match, several gaps
+  - 100 = excellent match across the key requirements
+
+Consider required skills, years of experience, and domain relevance.
+
+--- RESUME ---
+{resume_text}
+
+--- JOB DESCRIPTION ---
+{job_description_text}
+
+Respond with ONLY the integer score.

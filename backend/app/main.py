@@ -1,19 +1,22 @@
 """
 AI Job Assistant — Backend entry point.
 
-Epic 2 (Backend Foundation) wires up the structural pieces of the API:
-  - typed settings loaded from environment variables,
-  - centralized logging,
-  - CORS configured from settings,
-  - the database layer (SQLAlchemy) is available via dependencies.
+Structural pieces wired up here:
+  - typed settings loaded from environment variables (Epic 2),
+  - centralized logging (Epic 2),
+  - CORS configured from settings (Epic 2),
+  - the database layer via dependencies (Epic 2),
+  - the comparisons router for upload + parsing (Epic 4),
+  - AI provider selection validated at startup (Epic 5).
 
-No business logic (resume parsing, AI providers, persistence endpoints) lives
-here yet — only the `/health` endpoint, which now also reports basic readiness.
+The AI provider is only *selected/validated* here; it is not yet invoked by any
+endpoint (that happens in Epic 6). Use `AI_PROVIDER=mock` for local development.
 """
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
+from app.ai.factory import UnknownProviderError, get_ai_provider
 from app.api import comparisons
 from app.core.config import settings
 from app.core.logging import get_logger, setup_logging
@@ -39,9 +42,17 @@ app.add_middleware(
 
 @app.on_event("startup")
 def on_startup() -> None:
-    """Log a small banner so we can confirm config at boot time."""
+    """Log a small banner and validate the configured AI provider at boot."""
     logger.info("Starting %s v%s", settings.PROJECT_NAME, settings.VERSION)
-    logger.info("AI provider configured as: %s", settings.AI_PROVIDER)
+
+    # Resolve the AI provider early so a misconfigured AI_PROVIDER surfaces as a
+    # clear log message instead of failing later mid-request. We don't crash the
+    # app — /health and parsing endpoints stay usable.
+    try:
+        provider = get_ai_provider()
+        logger.info("AI provider ready: %s", provider.name)
+    except UnknownProviderError as exc:
+        logger.error("AI provider misconfigured: %s", exc)
 
 
 # Register feature routers. The comparisons router (Epic 4) handles resume +

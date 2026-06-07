@@ -53,13 +53,18 @@ SKILL_ALIASES: dict[str, list[str]] = {
 
 def _build_pattern(alias: str) -> re.Pattern[str]:
     """
-    Compile a case-insensitive, word-boundary pattern for one alias.
+    Compile a case-insensitive, token-boundary pattern for one alias.
 
     `re.escape` keeps special characters (like the ++ in C++) literal. We use
     lookarounds instead of plain \\b so symbols such as "c++" still match.
+
+    The boundaries reject characters that would make this a *different* token
+    (letters, digits, +, #). A leading "." is also rejected so the "js" alias
+    does not match inside "Node.js". A trailing "." IS allowed so a skill at the
+    end of a sentence (e.g. "Kubernetes.") still matches.
     """
     escaped = re.escape(alias)
-    return re.compile(rf"(?<![\w]){escaped}(?![\w+#.])", re.IGNORECASE)
+    return re.compile(rf"(?<![\w+#.]){escaped}(?![\w+#])", re.IGNORECASE)
 
 
 # Pre-compile all alias patterns once at import time for efficiency.

@@ -159,7 +159,13 @@ ai-job-assistant/
 │   │   ├── services/          # ✅ Business logic
 │   │   │   ├── parsing.py     # ✅ PDF/text extraction
 │   │   │   └── skills.py      # ✅ Keyword skill extraction
-│   │   └── ai/                #    Provider abstraction (later)
+│   │   └── ai/                # ✅ Provider abstraction
+│   │       ├── base.py        # ✅ AIProvider interface + AnalysisResult
+│   │       ├── mock_provider.py    # ✅ Deterministic mock provider
+│   │       ├── openai_provider.py  # ✅ OpenAI stub (Epic 6)
+│   │       ├── claude_provider.py  # ✅ Claude stub (Epic 6)
+│   │       ├── factory.py     # ✅ Provider selection via AI_PROVIDER
+│   │       └── prompts/       # ✅ Prompt templates + loader
 │   ├── alembic/               # ✅ Migration environment + versions/
 │   ├── alembic.ini            # ✅ Alembic config
 │   ├── tests/                 #    Pytest test suite (later)
@@ -409,15 +415,56 @@ curl -X POST http://localhost:8000/api/comparisons \
 The response is the saved comparison, including `extracted_skills` for both the
 resume and the job description.
 
-## AI Providers
+## AI Providers (Epic 5)
 
-The backend defines a single **provider interface** with a method such as `analyze(resume, job_description)`. Three implementations are planned:
+The backend defines a single **provider interface** (`app/ai/base.py`) so the
+rest of the app depends only on an abstraction. Providers are swapped purely via
+the `AI_PROVIDER` environment variable — no code changes required.
 
-- **Mock Provider** — Returns deterministic, realistic-looking results without any external calls. Used for local development, tests, and CI.
-- **OpenAI Provider** — Calls OpenAI models for scoring, skill gaps, and cover letters.
-- **Claude Provider** — Calls Anthropic Claude models for the same tasks.
+### Architecture
 
-Switching providers is done purely through the `AI_PROVIDER` environment variable — no code changes required.
+```
+            app code  ──►  get_ai_provider()  ──►  AIProvider.analyze(...)
+                              (factory.py)                │
+                                                          ▼
+                                                  AnalysisResult
+                              ┌───────────────────────────┴───────────────┐
+                              ▼                  ▼                          ▼
+                       MockAIProvider     OpenAIProvider            ClaudeProvider
+                       (deterministic)    (stub → Epic 6)           (stub → Epic 6)
+```
+
+- **`AIProvider`** (interface): one method, `analyze(resume_text,
+  job_description_text) -> AnalysisResult`.
+- **`AnalysisResult`** (dataclass): `score`, `missing_skills`, `summary`,
+  `cover_letter`, `provider` (+ `matched_skills` for context). These map onto the
+  `Comparison` columns persisted in a later epic.
+- **`get_ai_provider()`** (`factory.py`): returns the implementation named by
+  `AI_PROVIDER`. Unknown names raise `UnknownProviderError`. At startup the app
+  resolves the provider and logs it (or logs a clear error) without crashing.
+
+### Implementations
+
+- **Mock Provider** — Fully implemented and **deterministic**: the same inputs
+  always produce the same output. It derives the score from keyword skill
+  overlap and renders a templated summary + cover letter. No API keys, no cost —
+  ideal for local development, tests, and CI. This is the default
+  (`AI_PROVIDER=mock`).
+- **OpenAI Provider** — **Stub** for now. Recognized by the factory but
+  `analyze()` raises `NotImplementedError`. Real calls arrive in Epic 6.
+- **Claude Provider** — **Stub** for now, same as above.
+
+### Prompt templates
+
+Prompt text for the real providers lives in `app/ai/prompts/` as editable
+`.txt` files (`system`, `match_score`, `skill_gap`, `cover_letter`) with
+`{resume_text}` / `{job_description_text}` placeholders. A small loader
+(`prompts/__init__.py`) renders them. **The mock provider does not use these** —
+it is self-contained. They are scaffolding for Epic 6.
+
+> **Note:** Epic 5 only builds and *selects* the provider layer. No endpoint
+> calls `analyze()` yet — wiring it into `POST /api/comparisons` happens in
+> Epic 6.
 
 ---
 
