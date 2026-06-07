@@ -11,7 +11,7 @@
  */
 
 import { BACKEND_URL } from "./config";
-import type { HealthResponse } from "./types";
+import type { Comparison, HealthResponse } from "./types";
 
 /** Error thrown when the backend responds with a non-success status. */
 export class ApiError extends Error {
@@ -56,8 +56,55 @@ export function getHealth(): Promise<HealthResponse> {
   return request<HealthResponse>("/health");
 }
 
+/**
+ * Create a comparison by uploading a resume file + job description text.
+ *
+ * Uses `FormData` (multipart) so the file is transmitted correctly. We must NOT
+ * set the `Content-Type` header manually here — the browser sets it (including
+ * the multipart boundary) automatically.
+ *
+ * On validation failure the backend returns a `{ detail: string }` body, which
+ * we surface as the `ApiError` message so the UI can show it directly.
+ */
+export async function createComparison(
+  resumeFile: File,
+  jobDescription: string,
+): Promise<Comparison> {
+  const form = new FormData();
+  form.append("resume", resumeFile);
+  form.append("job_description", jobDescription);
+
+  let response: Response;
+  try {
+    response = await fetch(`${BACKEND_URL}/api/comparisons`, {
+      method: "POST",
+      body: form,
+    });
+  } catch (err) {
+    throw new ApiError(
+      err instanceof Error ? err.message : "Network request failed",
+      0,
+    );
+  }
+
+  if (!response.ok) {
+    // FastAPI puts human-readable validation errors in `detail`.
+    let message = `Request failed with status ${response.status}`;
+    try {
+      const body = await response.json();
+      if (typeof body?.detail === "string") message = body.detail;
+    } catch {
+      // Ignore JSON parse issues; keep the generic message.
+    }
+    throw new ApiError(message, response.status);
+  }
+
+  return (await response.json()) as Comparison;
+}
+
 // Export the client as a small namespace object for ergonomic imports
 // (e.g. `import { api } from "@/lib/api"; api.getHealth()`).
 export const api = {
   getHealth,
+  createComparison,
 };

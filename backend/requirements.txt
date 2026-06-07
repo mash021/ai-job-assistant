@@ -11,3 +11,7 @@ pydantic-settings==2.7.1    # Typed settings loaded from environment variables
 SQLAlchemy==2.0.36          # ORM and database toolkit
 alembic==1.14.0             # Database schema migrations
 psycopg2-binary==2.9.10     # PostgreSQL driver
+
+# ----- File parsing -----
+pypdf==5.1.0                # Extract text from uploaded PDF resumes
+python-multipart==0.0.20    # Required by FastAPI to parse multipart/form-data (uploads)

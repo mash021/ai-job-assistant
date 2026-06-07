@@ -26,6 +26,12 @@ class Comparison(Base):
     resume_text: Mapped[str] = mapped_column(Text, nullable=False)
     job_description_text: Mapped[str] = mapped_column(Text, nullable=False)
 
+    # ----- Parsing results (Epic 4) -----
+    # Skills detected via keyword matching. Stored as a JSONB object of the form
+    # {"resume": [...], "job_description": [...]}. This is NOT the AI skill-gap
+    # analysis (that is `missing_skills`, computed in a later epic).
+    extracted_skills: Mapped[dict | None] = mapped_column(JSONB, nullable=True)
+
     # ----- AI results (filled in by later epics) -----
     # Match score from 0–100.
     score: Mapped[int | None] = mapped_column(Integer, nullable=True)

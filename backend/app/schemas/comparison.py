@@ -34,6 +34,7 @@ class ComparisonRead(ComparisonBase):
     model_config = ConfigDict(from_attributes=True)
 
     id: int
+    extracted_skills: dict[str, list[str]] | None = None
     score: int | None = None
     missing_skills: list[str] | None = None
     cover_letter: str | None = None

@@ -1,15 +1,15 @@
 /**
  * Landing page (Epic 3 — Frontend Foundation).
  *
- * This is a server component that composes the page layout. It is intentionally
- * presentational: it shows what the product will do (feature preview) and embeds
- * the interactive <HealthCheck /> client component, which keeps the live
- * "frontend can reach backend" proof visible.
+ * This is a server component that composes the page layout. It shows a feature
+ * preview, embeds the interactive <AnalyzeForm /> (resume + job description
+ * intake), and keeps the <HealthCheck /> connectivity proof visible.
  *
- * No resume upload or AI analysis is implemented yet — those arrive in later
- * epics. The feature cards below are previews, marked "Coming soon".
+ * Epic 4 implements parsing & saving only — no AI match score or cover letter
+ * yet. The feature cards below remain previews marked "Coming soon".
  */
 
+import { AnalyzeForm } from "@/components/AnalyzeForm";
 import { HealthCheck } from "@/components/HealthCheck";
 
 // Static preview of the product's planned core features.
@@ -64,11 +64,14 @@ export default function Home() {
         ))}
       </section>
 
+      {/* Resume + job description intake (parsing & saving only) */}
+      <AnalyzeForm />
+
       {/* Live backend connectivity check (client component) */}
       <HealthCheck />
 
       <footer className="text-center text-sm text-slate-400">
-        Foundation stage · Frontend (Epic 3). Features above are previews.
+        Parsing stage · Epic 4. Match score and cover letter come later.
       </footer>
     </main>
   );

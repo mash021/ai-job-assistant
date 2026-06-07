@@ -13,15 +13,22 @@ export interface HealthResponse {
   version: string;
 }
 
+/** Skills detected during parsing (Epic 4), grouped by source. */
+export interface ExtractedSkills {
+  resume: string[];
+  job_description: string[];
+}
+
 /**
  * A Comparison as returned by the backend (mirrors the backend Pydantic
- * `ComparisonRead` schema). Defined now for forward-compatibility; the AI
- * result fields are filled in by later epics and may be null until then.
+ * `ComparisonRead` schema). The AI result fields (`score`, `missing_skills`,
+ * `cover_letter`) are filled in by later epics and are null after Epic 4.
  */
 export interface Comparison {
   id: number;
   resume_text: string;
   job_description_text: string;
+  extracted_skills: ExtractedSkills | null;
   score: number | null;
   missing_skills: string[] | null;
   cover_letter: string | null;

@@ -14,6 +14,7 @@ here yet — only the `/health` endpoint, which now also reports basic readiness
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
+from app.api import comparisons
 from app.core.config import settings
 from app.core.logging import get_logger, setup_logging
 
@@ -41,6 +42,11 @@ def on_startup() -> None:
     """Log a small banner so we can confirm config at boot time."""
     logger.info("Starting %s v%s", settings.PROJECT_NAME, settings.VERSION)
     logger.info("AI provider configured as: %s", settings.AI_PROVIDER)
+
+
+# Register feature routers. The comparisons router (Epic 4) handles resume +
+# job-description intake, parsing, and persistence.
+app.include_router(comparisons.router)
 
 
 @app.get("/health")

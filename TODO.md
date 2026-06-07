@@ -65,18 +65,18 @@ A detailed, epic-based checklist for tracking progress. Each **epic** maps rough
 
 ---
 
-## Epic 4 — Core Inputs & Parsing
+## Epic 4 — Core Inputs & Parsing ✅
 
 **Goal:** Accept and process resume + job description.
 
-- [ ] Build resume upload component (PDF/text)
-- [ ] Build job description input component
-- [ ] Backend endpoint to accept uploads
-- [ ] Implement resume text extraction (PDF/text)
-- [ ] Implement job description text extraction
-- [ ] Implement basic skill keyword extraction
-- [ ] Validate and sanitize inputs
-- [ ] Persist raw inputs to the database
+- [x] Build resume upload component (PDF/text)
+- [x] Build job description input component
+- [x] Backend endpoint to accept uploads (`POST /api/comparisons`)
+- [x] Implement resume text extraction (PDF/text)
+- [x] Implement job description text extraction
+- [x] Implement basic skill keyword extraction
+- [x] Validate and sanitize inputs (file type, size, length)
+- [x] Persist raw inputs + extracted skills to the database
 
 ---
 
@@ -175,7 +175,7 @@ A detailed, epic-based checklist for tracking progress. Each **epic** maps rough
 | 1 — Infrastructure & DevOps   | Done          |
 | 2 — Backend Foundation        | Done          |
 | 3 — Frontend Foundation       | Done          |
-| 4 — Core Inputs & Parsing     | Not started   |
+| 4 — Core Inputs & Parsing     | Done          |
 | 5 — AI Provider Layer         | Not started   |
 | 6 — Core Feature: Analyze     | Not started   |
 | 7 — Persistence & History     | Not started   |

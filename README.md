@@ -127,7 +127,8 @@ ai-job-assistant/
 │   │   ├── Card.tsx           # ✅ Card container
 │   │   ├── Loading.tsx        # ✅ Spinner / loading state
 │   │   ├── ErrorMessage.tsx   # ✅ Error state + retry
-│   │   └── HealthCheck.tsx    # ✅ Backend connectivity widget
+│   │   ├── HealthCheck.tsx    # ✅ Backend connectivity widget
+│   │   └── AnalyzeForm.tsx    # ✅ Resume upload + job description form
 │   ├── lib/                   # ✅ API client, config, shared types
 │   │   ├── api.ts             # ✅ Typed fetch wrapper + ApiError
 │   │   ├── config.ts          # ✅ Reads NEXT_PUBLIC_ env vars
@@ -153,8 +154,11 @@ ai-job-assistant/
 │   │   │   └── comparison.py  # ✅ Comparison model
 │   │   ├── schemas/           # ✅ Pydantic request/response schemas
 │   │   │   └── comparison.py  # ✅ Comparison schemas
-│   │   ├── api/               #    Routers/endpoints (later)
-│   │   ├── services/          #    Business logic (parsing, scoring) (later)
+│   │   ├── api/               # ✅ Routers/endpoints
+│   │   │   └── comparisons.py # ✅ POST /api/comparisons (upload + parse)
+│   │   ├── services/          # ✅ Business logic
+│   │   │   ├── parsing.py     # ✅ PDF/text extraction
+│   │   │   └── skills.py      # ✅ Keyword skill extraction
 │   │   └── ai/                #    Provider abstraction (later)
 │   ├── alembic/               # ✅ Migration environment + versions/
 │   ├── alembic.ini            # ✅ Alembic config
@@ -353,6 +357,57 @@ The app expects the backend at `NEXT_PUBLIC_BACKEND_URL` (defaults to
 `http://localhost:8000`). The landing page should show **"Backend is reachable"**
 once the backend is running; otherwise it shows an error with a **Try again**
 button.
+
+## Resume Upload & Parsing (Epic 4)
+
+The first real feature: submit a resume + job description, and the backend
+extracts text, detects skills (keyword matching), and **saves** the record.
+There is **no match score or cover letter yet** — this stage is parsing + saving
+only.
+
+### What happens on submit
+
+1. Frontend sends `multipart/form-data` to `POST /api/comparisons` with a
+   `resume` file and a `job_description` text field.
+2. Backend validates the file type (`.pdf`/`.txt`), file size (≤ 5 MB), and the
+   job description length (30–20,000 chars).
+3. Backend extracts clean text (`pypdf` for PDFs, UTF-8 decode for text).
+4. Backend detects known skills in both the resume and the job description.
+5. Backend stores `resume_text`, `job_description_text`, and `extracted_skills`
+   in the `comparisons` table and returns the saved record.
+
+### Using it from the UI
+
+1. Make sure migrations are applied (see below) and the stack is running.
+2. Open http://localhost:3000.
+3. In **"Analyze a resume against a job"**, choose a `.pdf` or `.txt` resume,
+   paste a job description, and click **Parse & save**.
+4. On success you'll see a confirmation with the record id and the skills
+   detected in each input.
+
+### Applying the Epic 4 migration
+
+Epic 4 adds an `extracted_skills` column, so run migrations again after
+rebuilding:
+
+```bash
+docker-compose up --build
+docker-compose exec backend alembic upgrade head
+```
+
+### Trying it from the command line
+
+```bash
+# Plain-text resume example
+printf "Experienced Python developer skilled in FastAPI, Docker and PostgreSQL." > resume.txt
+
+curl -X POST http://localhost:8000/api/comparisons \
+  -F "resume=@resume.txt;type=text/plain" \
+  -F "job_description=We need a backend engineer with Python, FastAPI, AWS and Kubernetes experience for our team."
+```
+
+The response is the saved comparison, including `extracted_skills` for both the
+resume and the job description.
 
 ## AI Providers
 
