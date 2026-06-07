@@ -120,8 +120,11 @@ ai-job-assistant/
 │
 ├── frontend/                  # Next.js + TypeScript + Tailwind
 │   ├── app/                   # ✅ App Router pages and layouts
-│   │   ├── layout.tsx         # ✅ Root layout
-│   │   ├── page.tsx           # ✅ Landing page (features + health check)
+│   │   ├── layout.tsx         # ✅ Root layout + top nav (Analyze/History)
+│   │   ├── page.tsx           # ✅ Landing page (features + analyze + health)
+│   │   ├── history/           # ✅ History feature routes
+│   │   │   ├── page.tsx       # ✅ /history (list)
+│   │   │   └── [id]/page.tsx  # ✅ /history/[id] (detail)
 │   │   └── globals.css        # ✅ Tailwind entry styles
 │   ├── components/            # ✅ Reusable UI components
 │   │   ├── Card.tsx           # ✅ Card container
@@ -130,6 +133,8 @@ ai-job-assistant/
 │   │   ├── HealthCheck.tsx    # ✅ Backend connectivity widget
 │   │   ├── AnalyzeForm.tsx    # ✅ Resume upload + job description form
 │   │   ├── AnalysisResult.tsx # ✅ Score, skills, cover letter display
+│   │   ├── HistoryList.tsx    # ✅ Saved comparisons list + delete
+│   │   ├── ComparisonDetail.tsx # ✅ Detail view (reuses AnalysisResult)
 │   │   └── CopyButton.tsx     # ✅ Copy-to-clipboard button
 │   ├── lib/                   # ✅ API client, config, shared types
 │   │   ├── api.ts             # ✅ Typed fetch wrapper + ApiError
@@ -157,7 +162,7 @@ ai-job-assistant/
 │   │   ├── schemas/           # ✅ Pydantic request/response schemas
 │   │   │   └── comparison.py  # ✅ Comparison schemas
 │   │   ├── api/               # ✅ Routers/endpoints
-│   │   │   └── comparisons.py # ✅ POST /api/comparisons (upload + parse)
+│   │   │   └── comparisons.py # ✅ create + list + detail + delete
 │   │   ├── services/          # ✅ Business logic
 │   │   │   ├── parsing.py     # ✅ PDF/text extraction
 │   │   │   └── skills.py      # ✅ Keyword skill extraction
@@ -424,6 +429,49 @@ curl -X POST http://localhost:8000/api/comparisons \
 The response includes `score`, `missing_skills`, `summary`, `cover_letter`,
 `provider`, and `extracted_skills` (with `resume`, `job_description`, and
 `matched`).
+
+## History (Epic 7)
+
+Every analysis is saved, and you can revisit, inspect, and delete past
+comparisons. No authentication — all records are shared in this single-user dev
+setup. No new database tables were added; history reuses the existing
+`comparisons` table.
+
+### Endpoints
+
+| Method   | Path                       | Description                                  |
+| -------- | -------------------------- | -------------------------------------------- |
+| `GET`    | `/api/comparisons`         | List saved comparisons (compact), newest first |
+| `GET`    | `/api/comparisons/{id}`    | Fetch one full comparison (`404` if missing) |
+| `DELETE` | `/api/comparisons/{id}`    | Delete one comparison (`404` if missing)     |
+
+The **list** returns a compact item (`id`, `score`, `provider`, `summary`,
+`missing_skills`, `extracted_skills`, `created_at`) — it omits heavy fields like
+`resume_text` and `cover_letter`. The **detail** endpoint returns the full
+`ComparisonRead` (including the raw inputs and cover letter).
+
+### Using it from the UI
+
+1. Click **History** in the top navigation (or visit http://localhost:3000/history).
+2. Each row shows the id, score, provider, created date, a short summary, and
+   missing skills, with **View** and **Delete** actions.
+3. **View** opens `/history/[id]`, which reuses the `AnalysisResult` component to
+   show the score, matched/missing skills, summary, and cover letter (with copy),
+   plus the original resume and job description text.
+4. **Delete** removes the record (with a confirmation prompt).
+
+### Trying it from the command line
+
+```bash
+# List
+curl -s http://localhost:8000/api/comparisons
+
+# Detail (replace 1 with a real id)
+curl -s http://localhost:8000/api/comparisons/1
+
+# Delete
+curl -s -X DELETE http://localhost:8000/api/comparisons/1
+```
 
 ## AI Providers (Epic 5)
 

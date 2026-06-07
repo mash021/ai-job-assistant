@@ -111,15 +111,16 @@ A detailed, epic-based checklist for tracking progress. Each **epic** maps rough
 
 ---
 
-## Epic 7 — Persistence & History
+## Epic 7 — Persistence & History ✅
 
 **Goal:** Let users revisit past comparisons.
 
-- [ ] Endpoint to list past comparisons
-- [ ] Endpoint to fetch a single comparison
-- [ ] History list view in the frontend
-- [ ] Comparison detail view
-- [ ] Delete a comparison
+- [x] Endpoint to list past comparisons (`GET /api/comparisons`)
+- [x] Endpoint to fetch a single comparison (`GET /api/comparisons/{id}`, 404)
+- [x] Endpoint to delete a comparison (`DELETE /api/comparisons/{id}`, 404)
+- [x] History list view in the frontend (`/history`)
+- [x] Comparison detail view (`/history/[id]`, reuses `AnalysisResult`)
+- [x] Delete a comparison (button per row)
 
 ---
 
@@ -178,7 +179,7 @@ A detailed, epic-based checklist for tracking progress. Each **epic** maps rough
 | 4 — Core Inputs & Parsing     | Done          |
 | 5 — AI Provider Layer         | Done (mock)   |
 | 6 — Core Feature: Analyze     | Done          |
-| 7 — Persistence & History     | Not started   |
+| 7 — Persistence & History     | Done          |
 | 8 — Testing & Quality         | Not started   |
 | 9 — Deployment                | Not started   |
 | 10 — Future Improvements      | Backlog       |

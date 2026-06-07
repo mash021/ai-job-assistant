@@ -19,9 +19,12 @@ import type { Comparison } from "@/lib/types";
 export function AnalysisResult({
   result,
   onReset,
+  resetLabel = "Analyze another",
 }: {
   result: Comparison;
-  onReset: () => void;
+  /** Optional action button (e.g. reset the form). Hidden when omitted. */
+  onReset?: () => void;
+  resetLabel?: string;
 }) {
   const matched = result.extracted_skills?.matched ?? [];
   const missing = result.missing_skills ?? [];
@@ -78,13 +81,15 @@ export function AnalysisResult({
         </pre>
       </div>
 
-      <button
-        type="button"
-        onClick={onReset}
-        className="rounded-md border border-slate-300 px-4 py-2 text-sm font-medium text-slate-700 transition hover:bg-slate-100"
-      >
-        Analyze another
-      </button>
+      {onReset && (
+        <button
+          type="button"
+          onClick={onReset}
+          className="rounded-md border border-slate-300 px-4 py-2 text-sm font-medium text-slate-700 transition hover:bg-slate-100"
+        >
+          {resetLabel}
+        </button>
+      )}
     </div>
   );
 }

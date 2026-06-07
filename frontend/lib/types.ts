@@ -41,3 +41,24 @@ export interface Comparison {
   provider: string | null;
   created_at: string;
 }
+
+/**
+ * Compact comparison shape used by the history list (mirrors the backend
+ * `ComparisonListItem`). Omits heavy fields like resume text and cover letter.
+ */
+export interface ComparisonListItem {
+  id: number;
+  score: number | null;
+  provider: string | null;
+  summary: string | null;
+  missing_skills: string[] | null;
+  extracted_skills: ExtractedSkills | null;
+  created_at: string;
+}
+
+/** Response shape of `DELETE /api/comparisons/{id}`. */
+export interface DeleteResponse {
+  deleted: boolean;
+  id: number;
+  detail: string;
+}

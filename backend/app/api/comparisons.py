@@ -14,11 +14,17 @@ from __future__ import annotations
 from fastapi import APIRouter, Depends, File, Form, HTTPException, UploadFile, status
 from sqlalchemy.orm import Session
 
+from sqlalchemy import select
+
 from app.ai.factory import UnknownProviderError, get_ai_provider
 from app.core.logging import get_logger
 from app.db.session import get_db
 from app.models.comparison import Comparison
-from app.schemas.comparison import ComparisonRead
+from app.schemas.comparison import (
+    ComparisonListItem,
+    ComparisonRead,
+    DeleteResponse,
+)
 from app.services.parsing import (
     ALLOWED_EXTENSIONS,
     FileParseError,
@@ -175,3 +181,46 @@ async def create_comparison(
     )
 
     return comparison
+
+
+def _get_or_404(db: Session, comparison_id: int) -> Comparison:
+    """Fetch a comparison by id or raise a 404 if it does not exist."""
+    comparison = db.get(Comparison, comparison_id)
+    if comparison is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Comparison {comparison_id} not found.",
+        )
+    return comparison
+
+
+@router.get("", response_model=list[ComparisonListItem])
+def list_comparisons(db: Session = Depends(get_db)) -> list[Comparison]:
+    """
+    Return all saved comparisons, newest first.
+
+    Uses the compact `ComparisonListItem` schema so the history list stays
+    lightweight (no resume/job text or cover letter).
+    """
+    stmt = select(Comparison).order_by(Comparison.created_at.desc())
+    return list(db.scalars(stmt).all())
+
+
+@router.get("/{comparison_id}", response_model=ComparisonRead)
+def get_comparison(
+    comparison_id: int, db: Session = Depends(get_db)
+) -> Comparison:
+    """Return the full saved comparison, or 404 if it does not exist."""
+    return _get_or_404(db, comparison_id)
+
+
+@router.delete("/{comparison_id}", response_model=DeleteResponse)
+def delete_comparison(
+    comparison_id: int, db: Session = Depends(get_db)
+) -> DeleteResponse:
+    """Delete one comparison by id. Returns 404 if it does not exist."""
+    comparison = _get_or_404(db, comparison_id)
+    db.delete(comparison)
+    db.commit()
+    logger.info("Deleted comparison id=%s", comparison_id)
+    return DeleteResponse(deleted=True, id=comparison_id)

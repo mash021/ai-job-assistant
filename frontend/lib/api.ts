@@ -11,7 +11,12 @@
  */
 
 import { BACKEND_URL } from "./config";
-import type { Comparison, HealthResponse } from "./types";
+import type {
+  Comparison,
+  ComparisonListItem,
+  DeleteResponse,
+  HealthResponse,
+} from "./types";
 
 /** Error thrown when the backend responds with a non-success status. */
 export class ApiError extends Error {
@@ -102,9 +107,29 @@ export async function createComparison(
   return (await response.json()) as Comparison;
 }
 
+/** List all saved comparisons (compact items), newest first. */
+export function listComparisons(): Promise<ComparisonListItem[]> {
+  return request<ComparisonListItem[]>("/api/comparisons");
+}
+
+/** Fetch a single full comparison by id. Throws `ApiError` (404) if missing. */
+export function getComparison(id: number): Promise<Comparison> {
+  return request<Comparison>(`/api/comparisons/${id}`);
+}
+
+/** Delete a comparison by id. */
+export function deleteComparison(id: number): Promise<DeleteResponse> {
+  return request<DeleteResponse>(`/api/comparisons/${id}`, {
+    method: "DELETE",
+  });
+}
+
 // Export the client as a small namespace object for ergonomic imports
 // (e.g. `import { api } from "@/lib/api"; api.getHealth()`).
 export const api = {
   getHealth,
   createComparison,
+  listComparisons,
+  getComparison,
+  deleteComparison,
 };
