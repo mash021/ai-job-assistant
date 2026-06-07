@@ -51,17 +51,17 @@ A detailed, epic-based checklist for tracking progress. Each **epic** maps rough
 
 ---
 
-## Epic 3 — Frontend Foundation (Next.js)
+## Epic 3 — Frontend Foundation (Next.js) ✅
 
 **Goal:** A clean, modern UI shell.
 
-- [ ] Initialize Next.js + TypeScript project
-- [ ] Configure Tailwind CSS
-- [ ] Set up global layout and theme
-- [ ] Create an API client wrapper (`lib/`)
-- [ ] Define shared TypeScript types
-- [ ] Build the landing/home page
-- [ ] Add loading and error UI states
+- [x] Initialize Next.js + TypeScript project
+- [x] Configure Tailwind CSS
+- [x] Set up global layout and theme
+- [x] Create an API client wrapper (`lib/`)
+- [x] Define shared TypeScript types
+- [x] Build the landing/home page
+- [x] Add loading and error UI states (reusable components)
 
 ---
 
@@ -174,7 +174,7 @@ A detailed, epic-based checklist for tracking progress. Each **epic** maps rough
 | 0 — Planning & Setup          | Done          |
 | 1 — Infrastructure & DevOps   | Done          |
 | 2 — Backend Foundation        | Done          |
-| 3 — Frontend Foundation       | Not started   |
+| 3 — Frontend Foundation       | Done          |
 | 4 — Core Inputs & Parsing     | Not started   |
 | 5 — AI Provider Layer         | Not started   |
 | 6 — Core Feature: Analyze     | Not started   |

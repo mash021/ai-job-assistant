@@ -1,91 +1,75 @@
-"use client";
-
 /**
- * Home page for Epic 1.
+ * Landing page (Epic 3 — Frontend Foundation).
  *
- * Its only job right now is to prove that the frontend can talk to the backend.
- * It calls the backend `/health` endpoint and shows the result. This validates
- * the full networking path: browser -> Next.js -> FastAPI.
+ * This is a server component that composes the page layout. It is intentionally
+ * presentational: it shows what the product will do (feature preview) and embeds
+ * the interactive <HealthCheck /> client component, which keeps the live
+ * "frontend can reach backend" proof visible.
  *
- * The backend URL comes from the public env var `NEXT_PUBLIC_BACKEND_URL` so it
- * can differ between local Docker, local dev, and production without code edits.
+ * No resume upload or AI analysis is implemented yet — those arrive in later
+ * epics. The feature cards below are previews, marked "Coming soon".
  */
 
-import { useEffect, useState } from "react";
+import { HealthCheck } from "@/components/HealthCheck";
 
-// `NEXT_PUBLIC_` vars are exposed to the browser. We default to localhost:8000
-// so the page still works when run outside Docker.
-const BACKEND_URL =
-  process.env.NEXT_PUBLIC_BACKEND_URL ?? "http://localhost:8000";
-
-type HealthStatus = "loading" | "ok" | "error";
+// Static preview of the product's planned core features.
+const FEATURES = [
+  {
+    title: "Match score",
+    description:
+      "See how well your resume matches a specific job description with an AI-powered score from 0 to 100.",
+  },
+  {
+    title: "Skill gap analysis",
+    description:
+      "Discover which skills the job asks for that are missing or weak in your resume.",
+  },
+  {
+    title: "Tailored cover letter",
+    description:
+      "Generate a personalized cover letter draft crafted for the exact role you want.",
+  },
+];
 
 export default function Home() {
-  const [status, setStatus] = useState<HealthStatus>("loading");
-  const [payload, setPayload] = useState<string>("");
-
-  useEffect(() => {
-    // Ask the backend whether it is alive when the page first loads.
-    fetch(`${BACKEND_URL}/health`)
-      .then((res) => {
-        if (!res.ok) throw new Error(`HTTP ${res.status}`);
-        return res.json();
-      })
-      .then((data) => {
-        setStatus("ok");
-        setPayload(JSON.stringify(data));
-      })
-      .catch((err) => {
-        setStatus("error");
-        setPayload(String(err));
-      });
-  }, []);
-
   return (
-    <main className="mx-auto flex max-w-2xl flex-col gap-6 px-6 py-16">
-      <header className="space-y-2">
-        <h1 className="text-3xl font-bold">AI Job Assistant</h1>
-        <p className="text-slate-600">
-          Infrastructure foundation (Epic 1). The card below confirms the
-          frontend can reach the backend API.
+    <main className="mx-auto flex max-w-3xl flex-col gap-10 px-6 py-16">
+      {/* Hero / introduction */}
+      <header className="space-y-4 text-center">
+        <span className="inline-block rounded-full bg-slate-200 px-3 py-1 text-xs font-medium uppercase tracking-wide text-slate-600">
+          Portfolio project
+        </span>
+        <h1 className="text-4xl font-bold tracking-tight sm:text-5xl">
+          AI Job Assistant
+        </h1>
+        <p className="mx-auto max-w-xl text-lg text-slate-600">
+          Upload your resume, compare it against any job description, and get an
+          AI match score, missing skills, and a tailored cover letter.
         </p>
       </header>
 
-      <section className="rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
-        <h2 className="mb-3 text-lg font-semibold">Backend health check</h2>
-
-        {status === "loading" && (
-          <p className="text-slate-500">Checking backend…</p>
-        )}
-
-        {status === "ok" && (
-          <div className="space-y-2">
-            <p className="inline-flex items-center gap-2 font-medium text-green-700">
-              <span className="h-2.5 w-2.5 rounded-full bg-green-500" />
-              Backend is reachable
-            </p>
-            <pre className="overflow-x-auto rounded-lg bg-slate-100 p-3 text-sm">
-              {payload}
-            </pre>
-          </div>
-        )}
-
-        {status === "error" && (
-          <div className="space-y-2">
-            <p className="inline-flex items-center gap-2 font-medium text-red-700">
-              <span className="h-2.5 w-2.5 rounded-full bg-red-500" />
-              Could not reach backend
-            </p>
-            <pre className="overflow-x-auto rounded-lg bg-red-50 p-3 text-sm text-red-800">
-              {payload}
-            </pre>
-            <p className="text-sm text-slate-500">
-              Make sure the backend is running at{" "}
-              <code className="rounded bg-slate-100 px-1">{BACKEND_URL}</code>.
-            </p>
-          </div>
-        )}
+      {/* Feature preview grid */}
+      <section className="grid gap-4 sm:grid-cols-3">
+        {FEATURES.map((feature) => (
+          <article
+            key={feature.title}
+            className="flex flex-col gap-2 rounded-xl border border-slate-200 bg-white p-5 shadow-sm"
+          >
+            <h3 className="font-semibold">{feature.title}</h3>
+            <p className="text-sm text-slate-600">{feature.description}</p>
+            <span className="mt-auto pt-2 text-xs font-medium text-slate-400">
+              Coming soon
+            </span>
+          </article>
+        ))}
       </section>
+
+      {/* Live backend connectivity check (client component) */}
+      <HealthCheck />
+
+      <footer className="text-center text-sm text-slate-400">
+        Foundation stage · Frontend (Epic 3). Features above are previews.
+      </footer>
     </main>
   );
 }

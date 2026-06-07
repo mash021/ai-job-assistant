@@ -121,10 +121,17 @@ ai-job-assistant/
 ├── frontend/                  # Next.js + TypeScript + Tailwind
 │   ├── app/                   # ✅ App Router pages and layouts
 │   │   ├── layout.tsx         # ✅ Root layout
-│   │   ├── page.tsx           # ✅ Home page (backend health check)
+│   │   ├── page.tsx           # ✅ Landing page (features + health check)
 │   │   └── globals.css        # ✅ Tailwind entry styles
-│   ├── components/            #    Reusable UI components (later)
-│   ├── lib/                   #    API client, helpers, types (later)
+│   ├── components/            # ✅ Reusable UI components
+│   │   ├── Card.tsx           # ✅ Card container
+│   │   ├── Loading.tsx        # ✅ Spinner / loading state
+│   │   ├── ErrorMessage.tsx   # ✅ Error state + retry
+│   │   └── HealthCheck.tsx    # ✅ Backend connectivity widget
+│   ├── lib/                   # ✅ API client, config, shared types
+│   │   ├── api.ts             # ✅ Typed fetch wrapper + ApiError
+│   │   ├── config.ts          # ✅ Reads NEXT_PUBLIC_ env vars
+│   │   └── types.ts           # ✅ Shared TypeScript types
 │   ├── package.json           # ✅
 │   ├── tsconfig.json          # ✅
 │   ├── next.config.js         # ✅
@@ -308,6 +315,44 @@ uvicorn app.main:app --reload
 > **Note:** The backend image gained new dependencies in Epic 2 (SQLAlchemy,
 > Alembic, psycopg2). If you already had the stack running from Epic 1, rebuild
 > it with `docker-compose up --build` so the backend container installs them.
+
+## Frontend Setup & Structure
+
+The frontend is a Next.js (App Router) app written in TypeScript and styled with
+Tailwind CSS (Epic 3). It is organized for clarity and reuse:
+
+- **`lib/`** — non-UI logic:
+  - `config.ts` centralizes `NEXT_PUBLIC_` environment variables.
+  - `types.ts` holds shared types that mirror the backend API contract.
+  - `api.ts` is a typed `fetch` wrapper that throws `ApiError` on failure, so
+    components get consistent error handling.
+- **`components/`** — reusable presentational pieces: `Card`, `Loading`,
+  `ErrorMessage`, and `HealthCheck` (which proves frontend↔backend connectivity).
+- **`app/`** — routes and layout. `page.tsx` is the landing page: a hero, a
+  preview of upcoming features ("Coming soon"), and the live health check.
+
+> Resume upload and AI analysis are **not** implemented yet — the feature cards
+> on the landing page are previews for later epics.
+
+### Running the frontend
+
+Easiest path is Docker (see [Quick start](#quick-start-docker--recommended)):
+open http://localhost:3000.
+
+To run it directly on your host instead:
+
+```bash
+cd frontend
+npm install
+# Optional: point at a non-default backend
+export NEXT_PUBLIC_BACKEND_URL=http://localhost:8000
+npm run dev
+```
+
+The app expects the backend at `NEXT_PUBLIC_BACKEND_URL` (defaults to
+`http://localhost:8000`). The landing page should show **"Backend is reachable"**
+once the backend is running; otherwise it shows an error with a **Try again**
+button.
 
 ## AI Providers
 
