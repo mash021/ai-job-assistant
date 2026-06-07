@@ -128,7 +128,9 @@ ai-job-assistant/
 │   │   ├── Loading.tsx        # ✅ Spinner / loading state
 │   │   ├── ErrorMessage.tsx   # ✅ Error state + retry
 │   │   ├── HealthCheck.tsx    # ✅ Backend connectivity widget
-│   │   └── AnalyzeForm.tsx    # ✅ Resume upload + job description form
+│   │   ├── AnalyzeForm.tsx    # ✅ Resume upload + job description form
+│   │   ├── AnalysisResult.tsx # ✅ Score, skills, cover letter display
+│   │   └── CopyButton.tsx     # ✅ Copy-to-clipboard button
 │   ├── lib/                   # ✅ API client, config, shared types
 │   │   ├── api.ts             # ✅ Typed fetch wrapper + ApiError
 │   │   ├── config.ts          # ✅ Reads NEXT_PUBLIC_ env vars
@@ -364,12 +366,15 @@ The app expects the backend at `NEXT_PUBLIC_BACKEND_URL` (defaults to
 once the backend is running; otherwise it shows an error with a **Try again**
 button.
 
-## Resume Upload & Parsing (Epic 4)
+## Analyze a Resume (Core Feature)
 
-The first real feature: submit a resume + job description, and the backend
-extracts text, detects skills (keyword matching), and **saves** the record.
-There is **no match score or cover letter yet** — this stage is parsing + saving
-only.
+The end-to-end value loop: submit a resume + job description, and the backend
+parses the inputs, runs the AI provider, and returns a **match score**, **skill
+gaps**, and a **tailored cover letter** — then saves the record.
+
+> Analysis currently uses the deterministic **mock provider** (Epic 6). Real
+> OpenAI/Claude calls arrive in a later epic. No authentication and no history
+> page yet.
 
 ### What happens on submit
 
@@ -378,23 +383,27 @@ only.
 2. Backend validates the file type (`.pdf`/`.txt`), file size (≤ 5 MB), and the
    job description length (30–20,000 chars).
 3. Backend extracts clean text (`pypdf` for PDFs, UTF-8 decode for text).
-4. Backend detects known skills in both the resume and the job description.
-5. Backend stores `resume_text`, `job_description_text`, and `extracted_skills`
-   in the `comparisons` table and returns the saved record.
+4. Backend detects known skills in the resume and the job description.
+5. Backend runs the configured AI provider's `analyze()` to compute the score,
+   missing skills, summary, and cover letter. Failures return a clear error
+   (e.g. `501` if a real provider is selected but not implemented).
+6. Backend stores `resume_text`, `job_description_text`, `extracted_skills`
+   (including the `matched` list), `score`, `missing_skills`, `summary`,
+   `cover_letter`, and `provider`, then returns the full record.
 
 ### Using it from the UI
 
 1. Make sure migrations are applied (see below) and the stack is running.
 2. Open http://localhost:3000.
 3. In **"Analyze a resume against a job"**, choose a `.pdf` or `.txt` resume,
-   paste a job description, and click **Parse & save**.
-4. On success you'll see a confirmation with the record id and the skills
-   detected in each input.
+   paste a job description, and click **Analyze**.
+4. You'll see the **match score**, **matched** and **missing** skills, a short
+   **summary**, and the generated **cover letter** with a **Copy** button.
 
-### Applying the Epic 4 migration
+### Applying migrations
 
-Epic 4 adds an `extracted_skills` column, so run migrations again after
-rebuilding:
+The schema grew over Epics 4 and 6 (`extracted_skills`, then `summary`), so run
+migrations after rebuilding:
 
 ```bash
 docker-compose up --build
@@ -412,8 +421,9 @@ curl -X POST http://localhost:8000/api/comparisons \
   -F "job_description=We need a backend engineer with Python, FastAPI, AWS and Kubernetes experience for our team."
 ```
 
-The response is the saved comparison, including `extracted_skills` for both the
-resume and the job description.
+The response includes `score`, `missing_skills`, `summary`, `cover_letter`,
+`provider`, and `extracted_skills` (with `resume`, `job_description`, and
+`matched`).
 
 ## AI Providers (Epic 5)
 
@@ -462,9 +472,9 @@ Prompt text for the real providers lives in `app/ai/prompts/` as editable
 (`prompts/__init__.py`) renders them. **The mock provider does not use these** —
 it is self-contained. They are scaffolding for Epic 6.
 
-> **Note:** Epic 5 only builds and *selects* the provider layer. No endpoint
-> calls `analyze()` yet — wiring it into `POST /api/comparisons` happens in
-> Epic 6.
+> **Note:** As of Epic 6 the provider is wired into `POST /api/comparisons`,
+> which calls `analyze()` and persists the result. The mock provider is the
+> default; OpenAI/Claude remain stubs until a later epic.
 
 ---
 

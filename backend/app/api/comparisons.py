@@ -1,11 +1,12 @@
 """
 Comparisons API router.
 
-Epic 4 scope: accept a resume file upload + a job description, extract clean
-text, detect skills via keyword matching, and persist everything to the
-`comparisons` table. That's it — no match score, no cover letter, no AI.
-
-The endpoint uses multipart/form-data because it carries a file plus text.
+Flow (Epic 4 + Epic 6):
+  1. Accept a resume file upload + a job description (multipart/form-data).
+  2. Extract clean text and detect skills via keyword matching (Epic 4).
+  3. Run the configured AI provider to produce score, missing skills, summary,
+     and a cover letter (Epic 6 — uses the deterministic MockAIProvider).
+  4. Persist everything to the `comparisons` table and return the full result.
 """
 
 from __future__ import annotations
@@ -13,6 +14,7 @@ from __future__ import annotations
 from fastapi import APIRouter, Depends, File, Form, HTTPException, UploadFile, status
 from sqlalchemy.orm import Session
 
+from app.ai.factory import UnknownProviderError, get_ai_provider
 from app.core.logging import get_logger
 from app.db.session import get_db
 from app.models.comparison import Comparison
@@ -44,14 +46,15 @@ async def create_comparison(
     db: Session = Depends(get_db),
 ) -> Comparison:
     """
-    Parse a resume + job description and save the raw inputs and detected skills.
+    Parse a resume + job description, run AI analysis, and save the result.
 
     Steps:
       1. Validate the job description length.
       2. Validate the file extension and size.
       3. Extract clean text from the file.
       4. Detect skills in both the resume and the job description.
-      5. Persist a new Comparison row and return it.
+      5. Run the configured AI provider (mock) for score/skills/cover letter.
+      6. Persist a new Comparison row and return the full result.
     """
     # --- 1. Validate the job description text ---
     job_text = (job_description or "").strip()
@@ -120,21 +123,55 @@ async def create_comparison(
         "job_description": extract_skills(job_text),
     }
 
-    # --- 5. Persist the new comparison ---
+    # --- 5. Run AI analysis (Epic 6) ---
+    # The provider is chosen by AI_PROVIDER (mock by default). Any failure here
+    # is surfaced as a clear error instead of saving a half-finished record.
+    try:
+        provider = get_ai_provider()
+        result = provider.analyze(resume_text, job_text)
+    except UnknownProviderError as exc:
+        # Misconfiguration: AI_PROVIDER names a provider we don't know.
+        logger.error("AI analysis failed (bad provider): %s", exc)
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=str(exc)
+        ) from exc
+    except NotImplementedError as exc:
+        # A real provider (openai/claude) is selected but not implemented yet.
+        logger.warning("AI analysis unavailable: %s", exc)
+        raise HTTPException(
+            status_code=status.HTTP_501_NOT_IMPLEMENTED, detail=str(exc)
+        ) from exc
+    except Exception as exc:  # pragma: no cover - defensive catch-all
+        logger.exception("Unexpected AI analysis error")
+        raise HTTPException(
+            status_code=status.HTTP_502_BAD_GATEWAY,
+            detail="AI analysis failed. Please try again.",
+        ) from exc
+
+    # Store the matched skills alongside the extracted ones for easy display.
+    extracted_skills["matched"] = result.matched_skills
+
+    # --- 6. Persist the new comparison with AI results ---
     comparison = Comparison(
         resume_text=resume_text,
         job_description_text=job_text,
         extracted_skills=extracted_skills,
+        score=result.score,
+        missing_skills=result.missing_skills,
+        summary=result.summary,
+        cover_letter=result.cover_letter,
+        provider=result.provider,
     )
     db.add(comparison)
     db.commit()
     db.refresh(comparison)
 
     logger.info(
-        "Saved comparison id=%s (resume_skills=%d, job_skills=%d)",
+        "Saved comparison id=%s (provider=%s, score=%s, missing=%d)",
         comparison.id,
-        len(extracted_skills["resume"]),
-        len(extracted_skills["job_description"]),
+        result.provider,
+        result.score,
+        len(result.missing_skills),
     )
 
     return comparison

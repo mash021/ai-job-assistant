@@ -34,9 +34,12 @@ class ComparisonRead(ComparisonBase):
     model_config = ConfigDict(from_attributes=True)
 
     id: int
+    # Keyword-detected skills. Keys: "resume", "job_description", and (after
+    # analysis) "matched" — skills the job requires that the resume also has.
     extracted_skills: dict[str, list[str]] | None = None
     score: int | None = None
     missing_skills: list[str] | None = None
+    summary: str | None = None
     cover_letter: str | None = None
     provider: str | None = None
     created_at: datetime

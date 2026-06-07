@@ -32,12 +32,14 @@ class Comparison(Base):
     # analysis (that is `missing_skills`, computed in a later epic).
     extracted_skills: Mapped[dict | None] = mapped_column(JSONB, nullable=True)
 
-    # ----- AI results (filled in by later epics) -----
+    # ----- AI results (populated by the analysis flow, Epic 6) -----
     # Match score from 0–100.
     score: Mapped[int | None] = mapped_column(Integer, nullable=True)
     # List of skills present in the job but missing from the resume.
     # Stored as JSONB so PostgreSQL can index/query it efficiently.
     missing_skills: Mapped[list | None] = mapped_column(JSONB, nullable=True)
+    # Short human-readable explanation of the result.
+    summary: Mapped[str | None] = mapped_column(Text, nullable=True)
     # The generated cover letter text.
     cover_letter: Mapped[str | None] = mapped_column(Text, nullable=True)
     # Which AI provider produced the result (mock/openai/claude).

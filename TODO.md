@@ -96,18 +96,18 @@ A detailed, epic-based checklist for tracking progress. Each **epic** maps rough
 
 ---
 
-## Epic 6 — Core Feature: Analyze
+## Epic 6 — Core Feature: Analyze ✅
 
 **Goal:** The full value loop, end to end.
 
-- [ ] Implement `POST /api/analyze` endpoint
-- [ ] Orchestrate parsing + provider call + persistence
-- [ ] Return `{ score, missing_skills, cover_letter, summary }`
-- [ ] Build the results page UI
-- [ ] Display the match score (with visual indicator)
-- [ ] Display the missing skills list
-- [ ] Display the generated cover letter
-- [ ] Add copy-to-clipboard for the cover letter
+- [x] Implement analyze flow (wired into `POST /api/comparisons`)
+- [x] Orchestrate parsing + provider call + persistence
+- [x] Return `{ score, missing_skills, summary, cover_letter, provider, extracted_skills }`
+- [x] Build the results UI (component)
+- [x] Display the match score (with visual indicator)
+- [x] Display the missing skills list (and matched skills)
+- [x] Display the generated cover letter
+- [x] Add copy-to-clipboard for the cover letter
 
 ---
 
@@ -177,7 +177,7 @@ A detailed, epic-based checklist for tracking progress. Each **epic** maps rough
 | 3 — Frontend Foundation       | Done          |
 | 4 — Core Inputs & Parsing     | Done          |
 | 5 — AI Provider Layer         | Done (mock)   |
-| 6 — Core Feature: Analyze     | Not started   |
+| 6 — Core Feature: Analyze     | Done          |
 | 7 — Persistence & History     | Not started   |
 | 8 — Testing & Quality         | Not started   |
 | 9 — Deployment                | Not started   |
