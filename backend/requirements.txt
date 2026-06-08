@@ -16,6 +16,9 @@ psycopg2-binary==2.9.10     # PostgreSQL driver
 pypdf==5.1.0                # Extract text from uploaded PDF resumes
 python-multipart==0.0.20    # Required by FastAPI to parse multipart/form-data (uploads)
 
+# ----- AI providers -----
+openai==1.59.6              # OpenAI Chat Completions API client
+
 # ----- Testing & quality -----
 pytest==8.3.4               # Test runner
 httpx==0.28.1               # Used by FastAPI's TestClient for API tests

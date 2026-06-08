@@ -12,10 +12,12 @@ Flow (Epic 4 + Epic 6):
 from __future__ import annotations
 
 from fastapi import APIRouter, Depends, File, Form, HTTPException, UploadFile, status
+from openai import APIConnectionError, AuthenticationError, RateLimitError
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from app.ai.factory import UnknownProviderError, get_ai_provider
+from app.ai.openai_provider import OpenAIConfigurationError
 from app.core.logging import get_logger
 from app.db.session import get_db
 from app.models.comparison import Comparison
@@ -145,6 +147,32 @@ async def create_comparison(
         logger.warning("AI analysis unavailable: %s", exc)
         raise HTTPException(
             status_code=status.HTTP_501_NOT_IMPLEMENTED, detail=str(exc)
+        ) from exc
+    except OpenAIConfigurationError as exc:
+        logger.error("OpenAI not configured: %s", exc)
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=str(exc)
+        ) from exc
+    except AuthenticationError as exc:
+        logger.error("OpenAI authentication failed: %s", exc)
+        raise HTTPException(
+            status_code=status.HTTP_502_BAD_GATEWAY,
+            detail="Invalid OPENAI_API_KEY. Check your .env file.",
+        ) from exc
+    except RateLimitError as exc:
+        logger.error("OpenAI rate/quota limit: %s", exc)
+        raise HTTPException(
+            status_code=status.HTTP_502_BAD_GATEWAY,
+            detail=(
+                "OpenAI quota exceeded. Add billing at platform.openai.com "
+                "or set AI_PROVIDER=mock in .env to use the free mock provider."
+            ),
+        ) from exc
+    except APIConnectionError as exc:
+        logger.error("OpenAI connection error: %s", exc)
+        raise HTTPException(
+            status_code=status.HTTP_502_BAD_GATEWAY,
+            detail="Could not reach OpenAI. Check your internet connection.",
         ) from exc
     except Exception as exc:  # pragma: no cover - defensive catch-all
         logger.exception("Unexpected AI analysis error")

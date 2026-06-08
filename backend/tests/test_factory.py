@@ -26,6 +26,6 @@ def test_unknown_provider_raises():
         get_ai_provider("does-not-exist")
 
 
-def test_stub_providers_not_implemented():
+def test_claude_provider_not_implemented():
     with pytest.raises(NotImplementedError):
-        get_ai_provider("openai").analyze("resume", "job")
+        get_ai_provider("claude").analyze("resume", "job")

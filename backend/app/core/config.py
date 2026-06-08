@@ -30,8 +30,11 @@ class Settings(BaseSettings):
     # "*" allows any origin (convenient for local development).
     BACKEND_CORS_ORIGINS: str = "*"
 
-    # ----- AI provider (declared now, used in later epics) -----
+    # ----- AI provider -----
     AI_PROVIDER: str = "mock"
+    OPENAI_API_KEY: str = ""
+    OPENAI_MODEL: str = "gpt-4o-mini"
+    ANTHROPIC_API_KEY: str = ""
 
     # ----- Logging -----
     LOG_LEVEL: str = "INFO"

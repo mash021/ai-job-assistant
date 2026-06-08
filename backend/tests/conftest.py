@@ -24,10 +24,20 @@ from sqlalchemy.pool import StaticPool
 
 # Import base_all (as a name that does NOT shadow the FastAPI `app` instance)
 # so Base.metadata knows about every model/table.
+from app.ai.mock_provider import MockAIProvider
 from app.db import base_all  # noqa: F401
 from app.db.base import Base
 from app.db.session import get_db
 from app.main import app
+
+
+@pytest.fixture(autouse=True)
+def mock_ai_provider(monkeypatch: pytest.MonkeyPatch) -> None:
+    """Keep API tests offline — never call real OpenAI/Claude during CI."""
+    monkeypatch.setattr(
+        "app.api.comparisons.get_ai_provider",
+        lambda: MockAIProvider(),
+    )
 
 
 @pytest.fixture
