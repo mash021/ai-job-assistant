@@ -1,34 +1,44 @@
 "use client";
 
 import dynamic from "next/dynamic";
-import { useEffect, useMemo, useState } from "react";
+import { useMemo } from "react";
 
 import { AnalysisStatsPanel } from "@/components/AnalysisStatsPanel";
+import { ChartErrorBoundary } from "@/components/charts/ChartErrorBoundary";
 import { buildAnalysisStats } from "@/lib/analysisStats";
 import type { Comparison } from "@/lib/types";
 
+function ChartLoading() {
+  return (
+    <div className="chart-canvas-wrap flex items-center justify-center">
+      <p className="text-sm text-[var(--text-muted)]">Loading 3D charts…</p>
+    </div>
+  );
+}
+
+function ChartUnavailable() {
+  return (
+    <div className="chart-canvas-wrap flex items-center justify-center p-6 text-center">
+      <p className="text-sm text-[var(--text-muted)]">
+        3D charts could not load. Refresh the page or use the stats below.
+      </p>
+    </div>
+  );
+}
+
 const AnalysisCharts3D = dynamic(
   () =>
-    import("@/components/charts/AnalysisCharts3D").then((mod) => mod.AnalysisCharts3D),
+    import("@/components/charts/AnalysisCharts3D")
+      .then((mod) => mod.AnalysisCharts3D)
+      .catch(() => ChartUnavailable),
   {
     ssr: false,
-    loading: () => (
-      <div className="chart-canvas-wrap flex items-center justify-center">
-        <p className="text-sm text-[var(--text-muted)]">Loading 3D charts…</p>
-      </div>
-    ),
+    loading: ChartLoading,
   },
 );
 
-function useClientReady() {
-  const [ready, setReady] = useState(false);
-  useEffect(() => setReady(true), []);
-  return ready;
-}
-
 export function AnalysisVisuals({ result }: { result: Comparison }) {
   const stats = useMemo(() => buildAnalysisStats(result), [result]);
-  const clientReady = useClientReady();
 
   return (
     <section className="space-y-6">
@@ -43,13 +53,9 @@ export function AnalysisVisuals({ result }: { result: Comparison }) {
       </div>
 
       <div className="card overflow-hidden p-3 sm:p-4">
-        {clientReady ? (
+        <ChartErrorBoundary fallback={<ChartUnavailable />}>
           <AnalysisCharts3D stats={stats} />
-        ) : (
-          <div className="chart-canvas-wrap flex items-center justify-center">
-            <p className="text-sm text-[var(--text-muted)]">Loading 3D charts…</p>
-          </div>
-        )}
+        </ChartErrorBoundary>
       </div>
 
       <AnalysisStatsPanel stats={stats} />
