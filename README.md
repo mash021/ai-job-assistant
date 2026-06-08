@@ -601,12 +601,31 @@ Anything beyond this (accounts, dashboards, analytics) is intentionally deferred
 
 ---
 
+## Deployment (Epic 9)
+
+When local dev and CI are green, deploy to production:
+
+| Service  | Host    |
+| -------- | ------- |
+| Frontend | Vercel  |
+| Backend  | Railway |
+| Database | Railway PostgreSQL |
+
+Full step-by-step guide: **[DEPLOYMENT.md](./DEPLOYMENT.md)**
+
+Quick verify after deploy:
+
+```bash
+./scripts/smoke-production.sh https://your-backend.up.railway.app https://your-app.vercel.app
+```
+
+---
+
 ## Future Improvements
 
 - User authentication and saved profiles.
 - Multiple resume versions and A/B comparison.
 - Rich analytics dashboard (score trends over time).
-- Export cover letters to PDF/DOCX.
 - Browser extension to capture job postings.
 - Multi-language support.
 - Rate limiting, caching, and observability.
@@ -617,6 +636,7 @@ Anything beyond this (accounts, dashboards, analytics) is intentionally deferred
 
 - **[PROJECT_PLAN.md](./PROJECT_PLAN.md)** — Scrum-style roadmap, sprints, architecture details, and milestones.
 - **[TODO.md](./TODO.md)** — Detailed epic-and-task checklist for tracking progress.
+- **[DEPLOYMENT.md](./DEPLOYMENT.md)** — Production deploy guide (Vercel + Railway).
 
 ---
 

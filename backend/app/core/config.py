@@ -6,6 +6,7 @@ so the same code runs unchanged across local Docker, local dev, and production.
 We use `pydantic-settings`, which validates and type-casts the values for us.
 """
 
+from pydantic import field_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
@@ -38,6 +39,14 @@ class Settings(BaseSettings):
 
     # ----- Logging -----
     LOG_LEVEL: str = "INFO"
+
+    @field_validator("DATABASE_URL", mode="before")
+    @classmethod
+    def normalize_database_url(cls, value: str) -> str:
+        """Railway/Render often provide postgres:// — SQLAlchemy needs postgresql://."""
+        if isinstance(value, str) and value.startswith("postgres://"):
+            return value.replace("postgres://", "postgresql://", 1)
+        return value
 
     @property
     def cors_origins_list(self) -> list[str]:

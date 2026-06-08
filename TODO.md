@@ -142,14 +142,18 @@ A detailed, epic-based checklist for tracking progress. Each **epic** maps rough
 
 **Goal:** Make it publicly available.
 
-- [ ] Deploy frontend to Vercel
+- [ ] Deploy frontend to Vercel (manual — see `DEPLOYMENT.md`)
 - [ ] Configure frontend environment variables in Vercel
-- [ ] Deploy backend (container host)
-- [ ] Provision a managed PostgreSQL database
-- [ ] Run database migrations in production
-- [ ] Configure production CORS and secrets
-- [ ] Smoke-test the live deployment
-- [ ] Write deployment documentation
+- [ ] Deploy backend to Railway (manual — see `DEPLOYMENT.md`)
+- [ ] Provision a managed PostgreSQL database (Railway plugin)
+- [x] Production Dockerfiles + Railway config (`Dockerfile.prod`, `railway.toml`)
+- [x] Run database migrations on production boot (`scripts/start.sh`)
+- [x] Production env templates (`.env.production.example`)
+- [x] Normalize `postgres://` URLs for Railway/Render
+- [x] Vercel config (`frontend/vercel.json`)
+- [x] Smoke-test script (`scripts/smoke-production.sh`)
+- [x] Write deployment documentation (`DEPLOYMENT.md`)
+- [ ] Smoke-test the live deployment (after you deploy)
 
 ---
 
@@ -181,5 +185,5 @@ A detailed, epic-based checklist for tracking progress. Each **epic** maps rough
 | 6 — Core Feature: Analyze     | Done          |
 | 7 — Persistence & History     | Done          |
 | 8 — Testing & Quality         | Done          |
-| 9 — Deployment                | Not started   |
+| 9 — Deployment                | Ready to deploy (see `DEPLOYMENT.md`) |
 | 10 — Future Improvements      | Backlog       |
