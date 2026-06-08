@@ -1,4 +1,13 @@
-# AI Job Assistant
+
+
+# AI Job Assistant:
+
+##Interface Design Projects
+
+<img width="1692" height="1684" alt="Image 08-06-2026 at 12 57 (1)" src="https://github.com/user-attachments/assets/ee933ba6-00de-456a-a658-f21cd775ac46" />
+<img width="2002" height="1698" alt="Image 08-06-2026 at 12 57" src="https://github.com/user-attachments/assets/8d057417-0df2-4a8b-b848-bddf033777ae" />
+<img width="1954" height="1674" alt="Image 08-06-2026 at 12 56" src="https://github.com/user-attachments/assets/2e51a8f1-8c15-4267-a688-26e4cb738d74" />
+
 
 > An AI-powered, full-stack portfolio project that helps job seekers tailor their applications. Upload a resume, paste a job description, and get an AI match score, a list of missing skills, and a custom-generated cover letter.
 
