@@ -1,4 +1,238 @@
-/* Tailwind's base resets, component classes, and utility classes. */
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+/* --------------------------------------------------------------------------
+   Color Hunt palette — vivid, high-contrast usage (not washed out):
+     #F5F5F5 · #76ABAE · #303841 · #FF5722
+   -------------------------------------------------------------------------- */
+:root {
+  --c-light: #f5f5f5;
+  --c-teal: #76abae;
+  --c-dark: #303841;
+  --c-orange: #ff5722;
+
+  /* Vivid accents — buttons, icons, labels only */
+  --vivid-orange: #ff4500;
+  --vivid-orange-glow: rgba(255, 69, 0, 0.55);
+  --vivid-teal: #00b4b8;
+  --vivid-teal-glow: rgba(0, 180, 184, 0.5);
+  --vivid-coral: #ff6b35;
+
+  --bg: var(--c-light);
+  --bg-elevated: #ffffff;
+  --surface: #d4ecef;
+  --border: var(--c-teal);
+  --text: var(--c-dark);
+  --text-muted: #4a5c5f;
+  --accent: var(--vivid-orange);
+  --accent-hover: #ff6b00;
+  --accent-secondary: var(--vivid-teal);
+  --on-accent: #ffffff;
+  --texture-opacity: 0.02;
+}
+
+.dark {
+  --bg: var(--c-dark);
+  --bg-elevated: #3d4754;
+  --surface: #4a6870;
+  --border: var(--c-teal);
+  --text: var(--c-light);
+  --text-muted: #c8e0e2;
+  --vivid-orange: #ff6e40;
+  --vivid-orange-glow: rgba(255, 110, 64, 0.6);
+  --vivid-teal: #00e5ea;
+  --vivid-teal-glow: rgba(0, 229, 234, 0.45);
+  --vivid-coral: #ff8a65;
+  --accent: var(--vivid-orange);
+  --accent-hover: #ff8a50;
+  --accent-secondary: var(--vivid-teal);
+  --on-accent: #ffffff;
+  --texture-opacity: 0.03;
+}
+
+@layer base {
+  html {
+    scroll-behavior: smooth;
+  }
+
+  body {
+    @apply bg-[var(--bg)] text-[var(--text)] antialiased transition-colors duration-300;
+  }
+
+  ::selection {
+    background: var(--vivid-orange);
+    color: #fff;
+  }
+}
+
+@layer components {
+  .page-shell {
+    @apply relative min-h-screen;
+  }
+
+  .page-shell::before {
+    content: "";
+    @apply pointer-events-none fixed inset-0 -z-10;
+    opacity: var(--texture-opacity);
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+    background-repeat: repeat;
+    background-size: 180px 180px;
+  }
+
+  /* Bold teal glow at top */
+  .page-shell::after {
+    content: "";
+    @apply pointer-events-none fixed inset-0 -z-10;
+    background: radial-gradient(
+      ellipse 90% 55% at 50% -15%,
+      color-mix(in srgb, var(--c-teal) 35%, transparent),
+      transparent 65%
+    );
+  }
+
+  .dark .page-shell::after {
+    background: radial-gradient(
+      ellipse 90% 55% at 50% -15%,
+      color-mix(in srgb, var(--c-orange) 18%, transparent),
+      transparent 65%
+    );
+  }
+
+  .card {
+    @apply rounded-2xl border-2 border-[var(--border)] bg-[var(--bg-elevated)] p-6 shadow-md;
+  }
+
+  .card-interactive {
+    @apply card transition duration-300 hover:-translate-y-0.5 hover:border-[var(--vivid-orange)] hover:shadow-lg;
+  }
+
+  .label-caps {
+    @apply text-[11px] font-bold uppercase tracking-[0.14em] text-[var(--vivid-orange)];
+  }
+
+  .btn-primary {
+    @apply inline-flex items-center justify-center gap-2 rounded-full px-6 py-2.5 text-sm font-bold text-white shadow-lg transition duration-200 disabled:cursor-not-allowed disabled:opacity-40;
+    background: linear-gradient(135deg, var(--vivid-orange) 0%, var(--vivid-coral) 100%);
+    box-shadow: 0 6px 20px var(--vivid-orange-glow);
+  }
+
+  .btn-primary:hover:not(:disabled) {
+    filter: brightness(1.08) saturate(1.15);
+    box-shadow: 0 10px 28px var(--vivid-orange-glow);
+    transform: translateY(-1px);
+  }
+
+  .btn-secondary {
+    @apply inline-flex items-center justify-center gap-2 rounded-full border-2 px-5 py-2 text-sm font-bold text-white transition duration-200;
+    border-color: var(--vivid-teal);
+    background: linear-gradient(135deg, var(--vivid-teal) 0%, #00d4d8 100%);
+    box-shadow: 0 6px 18px var(--vivid-teal-glow);
+  }
+
+  .btn-secondary:hover {
+    filter: brightness(1.1) saturate(1.2);
+    box-shadow: 0 10px 24px var(--vivid-teal-glow);
+    transform: translateY(-1px);
+  }
+
+  .btn-ghost {
+    @apply inline-flex items-center justify-center rounded-full px-4 py-1.5 text-sm font-bold transition duration-200;
+    color: var(--vivid-teal);
+  }
+
+  .btn-ghost:hover {
+    background: color-mix(in srgb, var(--vivid-teal) 14%, var(--bg-elevated));
+    color: var(--vivid-teal);
+    box-shadow: 0 0 0 2px color-mix(in srgb, var(--vivid-teal) 35%, transparent);
+  }
+
+  .btn-danger {
+    @apply inline-flex items-center justify-center rounded-full border-2 px-4 py-1.5 text-sm font-bold transition duration-200 disabled:opacity-40;
+    border-color: var(--vivid-orange);
+    color: var(--vivid-orange);
+  }
+
+  .btn-danger:hover:not(:disabled) {
+    background: var(--vivid-orange);
+    color: #fff;
+    box-shadow: 0 6px 18px var(--vivid-orange-glow);
+  }
+
+  .input-field {
+    @apply block w-full rounded-xl border-2 border-[var(--border)] bg-white px-4 py-3.5 text-sm text-[var(--c-dark)] placeholder:text-[var(--text-muted)] transition duration-200 focus:outline-none dark:bg-[var(--c-dark)] dark:text-[var(--c-light)];
+  }
+
+  .input-field:focus {
+    border-color: var(--vivid-teal);
+    box-shadow: 0 0 0 4px color-mix(in srgb, var(--vivid-teal) 25%, transparent);
+  }
+
+  .pill {
+    @apply rounded-full px-3 py-1 text-xs font-bold text-white;
+    background: linear-gradient(135deg, var(--vivid-teal), #00d4d8);
+    box-shadow: 0 3px 10px var(--vivid-teal-glow);
+  }
+
+  .pill-accent {
+    @apply rounded-full px-3 py-1 text-xs font-bold text-white;
+    background: linear-gradient(135deg, var(--vivid-orange), var(--vivid-coral));
+    box-shadow: 0 3px 10px var(--vivid-orange-glow);
+  }
+
+  .skill-badge {
+    @apply inline-flex items-center gap-1.5 rounded-full border-2 bg-[var(--bg-elevated)] px-2.5 py-1 text-xs font-semibold text-[var(--text)] shadow-sm;
+    border-color: var(--vivid-teal);
+  }
+
+  .skill-badge-missing {
+    border-color: var(--vivid-orange);
+    background: color-mix(in srgb, var(--vivid-orange) 14%, var(--bg-elevated));
+  }
+
+  .skill-badge-icon {
+    @apply h-4 w-4 shrink-0;
+    color: var(--vivid-teal);
+    filter: saturate(1.4);
+  }
+
+  .skill-badge-missing .skill-badge-icon {
+    color: var(--vivid-orange);
+    filter: saturate(1.5);
+  }
+
+  .divider {
+    @apply h-0.5 w-full rounded-full;
+    background: linear-gradient(90deg, var(--vivid-teal), var(--vivid-orange));
+  }
+
+  .icon-box {
+    @apply flex h-11 w-11 items-center justify-center rounded-xl text-white;
+    background: linear-gradient(145deg, var(--vivid-teal) 0%, #00dce0 100%);
+    box-shadow: 0 6px 18px var(--vivid-teal-glow);
+  }
+
+  .score-display {
+    @apply text-7xl font-bold tabular-nums tracking-tight;
+    color: var(--vivid-orange);
+    text-shadow: 0 2px 16px var(--vivid-orange-glow);
+  }
+
+  .nav-active {
+    @apply rounded-full px-4 py-1.5 text-sm font-bold text-white;
+    background: linear-gradient(135deg, var(--vivid-orange), var(--vivid-coral));
+    box-shadow: 0 4px 14px var(--vivid-orange-glow);
+  }
+
+  .chart-canvas-wrap {
+    @apply relative h-[22rem] w-full overflow-hidden rounded-xl bg-[color-mix(in_srgb,var(--c-teal)_8%,var(--bg))] sm:h-[26rem];
+  }
+
+  .chart-canvas-wrap > div:first-child {
+    @apply absolute inset-0 h-full w-full;
+  }
+
+  .chart-canvas-wrap canvas {
+    @apply block h-full w-full rounded-xl;
+  }
+}

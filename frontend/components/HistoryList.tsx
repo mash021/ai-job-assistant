@@ -1,15 +1,5 @@
 "use client";
 
-/**
- * History list (Epic 7).
- *
- * Loads all saved comparisons (compact items) and renders them newest-first.
- * Each row shows id, score, provider, created date, a short summary, and the
- * missing skills, plus links to the detail view and a delete button.
- *
- * Keeps loading and error states via the shared components.
- */
-
 import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
 
@@ -26,7 +16,6 @@ type State =
 
 export function HistoryList() {
   const [state, setState] = useState<State>({ kind: "loading" });
-  // Tracks which row is currently being deleted (to disable its button).
   const [deletingId, setDeletingId] = useState<number | null>(null);
 
   const load = useCallback(async () => {
@@ -46,22 +35,17 @@ export function HistoryList() {
   }, [load]);
 
   async function handleDelete(id: number) {
-    if (!window.confirm(`Delete comparison #${id}? This cannot be undone.`)) {
-      return;
-    }
+    if (!window.confirm(`Delete #${id}?`)) return;
     setDeletingId(id);
     try {
       await api.deleteComparison(id);
-      // Optimistically remove the row from the current list.
       setState((prev) =>
         prev.kind === "ok"
           ? { kind: "ok", items: prev.items.filter((i) => i.id !== id) }
           : prev,
       );
     } catch (err) {
-      const message =
-        err instanceof ApiError ? err.message : "Failed to delete.";
-      window.alert(message);
+      window.alert(err instanceof ApiError ? err.message : "Delete failed.");
     } finally {
       setDeletingId(null);
     }
@@ -70,7 +54,7 @@ export function HistoryList() {
   if (state.kind === "loading") {
     return (
       <Card>
-        <Loading label="Loading history…" />
+        <Loading />
       </Card>
     );
   }
@@ -78,11 +62,7 @@ export function HistoryList() {
   if (state.kind === "error") {
     return (
       <Card>
-        <ErrorMessage
-          title="Could not load history"
-          details={state.message}
-          onRetry={load}
-        />
+        <ErrorMessage title="Could not load" details={state.message} onRetry={load} />
       </Card>
     );
   }
@@ -90,19 +70,16 @@ export function HistoryList() {
   if (state.items.length === 0) {
     return (
       <Card>
-        <p className="text-slate-500">
-          No saved comparisons yet.{" "}
-          <Link href="/" className="font-medium text-slate-900 underline">
-            Analyze a resume
-          </Link>{" "}
-          to create one.
-        </p>
+        <p className="text-sm text-[var(--text-muted)]">No analyses yet.</p>
+        <Link href="/" className="btn-primary mt-6 inline-flex">
+          Start analysis
+        </Link>
       </Card>
     );
   }
 
   return (
-    <div className="space-y-4">
+    <div className="overflow-hidden rounded-2xl border border-[var(--border)] divide-y divide-[var(--border)]">
       {state.items.map((item) => (
         <HistoryRow
           key={item.id}
@@ -125,52 +102,41 @@ function HistoryRow({
   onDelete: () => void;
 }) {
   const missing = item.missing_skills ?? [];
-  const created = new Date(item.created_at).toLocaleString();
+  const created = new Date(item.created_at).toLocaleDateString("en-US", {
+    month: "short",
+    day: "numeric",
+    year: "numeric",
+  });
 
   return (
-    <Card>
-      <div className="flex items-start justify-between gap-4">
-        <div className="space-y-2">
-          <div className="flex items-center gap-3">
-            <span className="rounded-full bg-slate-100 px-2.5 py-1 text-xs font-semibold">
-              #{item.id}
-            </span>
-            <span className="text-sm font-medium">
-              Score: {item.score ?? "—"}
-            </span>
-            <span className="text-xs text-slate-500">
-              {item.provider ?? "unknown"} · {created}
-            </span>
-          </div>
-
-          {item.summary && (
-            <p className="text-sm text-slate-700">{item.summary}</p>
-          )}
-
-          {missing.length > 0 && (
-            <p className="text-xs text-slate-500">
-              Missing: {missing.join(", ")}
-            </p>
-          )}
+    <div className="flex items-start justify-between gap-6 bg-[var(--bg-elevated)] px-6 py-5 transition hover:bg-[var(--surface)]">
+      <div className="min-w-0 flex-1 space-y-2">
+        <div className="flex flex-wrap items-baseline gap-3">
+          <span className="text-3xl font-bold tabular-nums text-[var(--vivid-orange)]">
+            {item.score ?? "—"}
+          </span>
+          <span className="pill-accent font-mono">#{item.id}</span>
+          <span className="text-xs text-[var(--text-muted)]">
+            {created} · {item.provider}
+          </span>
         </div>
-
-        <div className="flex shrink-0 flex-col items-end gap-2">
-          <Link
-            href={`/history/${item.id}`}
-            className="rounded-md bg-slate-900 px-3 py-1.5 text-sm font-medium text-white transition hover:bg-slate-700"
-          >
-            View
-          </Link>
-          <button
-            type="button"
-            onClick={onDelete}
-            disabled={deleting}
-            className="rounded-md border border-red-300 px-3 py-1.5 text-sm font-medium text-red-700 transition hover:bg-red-50 disabled:cursor-not-allowed disabled:opacity-50"
-          >
-            {deleting ? "Deleting…" : "Delete"}
-          </button>
-        </div>
+        {item.summary && (
+          <p className="line-clamp-1 text-sm text-[var(--text-muted)]">{item.summary}</p>
+        )}
+        {missing.length > 0 && (
+          <p className="text-xs text-[var(--text-muted)]">
+            Missing · {missing.join(", ")}
+          </p>
+        )}
       </div>
-    </Card>
+      <div className="flex shrink-0 items-center gap-2">
+        <Link href={`/history/${item.id}`} className="btn-ghost">
+          View
+        </Link>
+        <button type="button" onClick={onDelete} disabled={deleting} className="btn-danger">
+          {deleting ? "…" : "Delete"}
+        </button>
+      </div>
+    </div>
   );
 }

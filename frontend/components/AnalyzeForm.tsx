@@ -1,26 +1,15 @@
 "use client";
 
-/**
- * Resume + job description intake form (Epic 4 + Epic 6).
- *
- * Responsibilities:
- *  - Let the user pick a resume file (.pdf or .txt).
- *  - Let the user paste a job description.
- *  - Submit both to the backend, which parses, runs AI analysis, and saves.
- *  - Show loading and error states.
- *  - On success, render the full analysis (score, skills, cover letter).
- */
-
 import { useState } from "react";
 
 import { AnalysisResult } from "@/components/AnalysisResult";
 import { Card } from "@/components/Card";
 import { ErrorMessage } from "@/components/ErrorMessage";
+import { IconUpload } from "@/components/Icons";
 import { Loading } from "@/components/Loading";
 import { api, ApiError } from "@/lib/api";
 import type { Comparison } from "@/lib/types";
 
-// Client-side mirror of the backend's accepted file types, for early feedback.
 const ACCEPTED_EXTENSIONS = [".pdf", ".txt"];
 const MIN_JOB_CHARS = 30;
 
@@ -59,74 +48,82 @@ export function AnalyzeForm() {
     setStatus({ kind: "idle" });
   }
 
-  // After a successful analysis, show the result instead of the form.
   if (status.kind === "success") {
     return (
-      <Card title="Analysis result">
+      <Card title="Results" subtitle="Your analysis is ready">
         <AnalysisResult result={status.result} onReset={resetForm} />
       </Card>
     );
   }
 
   return (
-    <Card title="Analyze a resume against a job">
-      <form onSubmit={handleSubmit} className="space-y-5">
-        {/* Resume file picker */}
-        <div className="space-y-1.5">
-          <label htmlFor="resume" className="block text-sm font-medium">
-            Resume file <span className="text-slate-400">(.pdf or .txt)</span>
+    <Card title="New analysis" subtitle="Resume and job description required">
+      <form onSubmit={handleSubmit} className="space-y-8">
+        <div className="space-y-3">
+          <label htmlFor="resume" className="label-caps">
+            Resume
           </label>
-          <input
-            id="resume"
-            type="file"
-            accept={ACCEPTED_EXTENSIONS.join(",")}
-            onChange={(e) => setFile(e.target.files?.[0] ?? null)}
-            className="block w-full text-sm text-slate-600 file:mr-4 file:rounded-md file:border-0 file:bg-slate-900 file:px-4 file:py-2 file:text-sm file:font-medium file:text-white hover:file:bg-slate-700"
-          />
-          {file && (
-            <p className="text-xs text-slate-500">Selected: {file.name}</p>
-          )}
+          <label
+            htmlFor="resume"
+            className={`flex cursor-pointer items-center gap-4 rounded-xl border px-5 py-5 transition duration-200 ${
+              file
+                ? "border-[var(--vivid-teal)] bg-[var(--surface)]"
+                : "border-[var(--border)] bg-[var(--bg)] hover:border-[var(--vivid-teal)]"
+            }`}
+          >
+            <span className="icon-box shrink-0">
+              <IconUpload />
+            </span>
+            <span>
+              <span className="block text-sm font-medium text-[var(--text)]">
+                {file ? file.name : "Choose a file"}
+              </span>
+              <span className="mt-0.5 block text-xs text-[var(--text-muted)]">
+                PDF or TXT · 5 MB max
+              </span>
+            </span>
+            <input
+              id="resume"
+              type="file"
+              accept={ACCEPTED_EXTENSIONS.join(",")}
+              onChange={(e) => setFile(e.target.files?.[0] ?? null)}
+              className="sr-only"
+            />
+          </label>
         </div>
 
-        {/* Job description textarea */}
-        <div className="space-y-1.5">
-          <label htmlFor="job" className="block text-sm font-medium">
+        <div className="space-y-3">
+          <label htmlFor="job" className="label-caps">
             Job description
           </label>
           <textarea
             id="job"
             value={jobDescription}
             onChange={(e) => setJobDescription(e.target.value)}
-            rows={8}
-            placeholder="Paste the full job description here…"
-            className="block w-full rounded-lg border border-slate-300 p-3 text-sm shadow-sm focus:border-slate-500 focus:outline-none focus:ring-1 focus:ring-slate-500"
+            rows={7}
+            placeholder="Paste the full job description…"
+            className="input-field resize-none"
           />
-          <p className="text-xs text-slate-500">
+          <p className="text-xs text-[var(--text-muted)]">
             {jobTooShort
-              ? `Please enter at least ${MIN_JOB_CHARS} characters.`
+              ? `Minimum ${MIN_JOB_CHARS} characters`
               : `${jobDescription.trim().length} characters`}
           </p>
         </div>
 
-        {/* Error state */}
         {status.kind === "error" && (
           <ErrorMessage
-            title="Could not save"
+            title="Analysis failed"
             details={status.message}
             onRetry={() => setStatus({ kind: "idle" })}
           />
         )}
 
-        {/* Submit / loading */}
-        <div className="flex items-center gap-4">
-          <button
-            type="submit"
-            disabled={!canSubmit}
-            className="rounded-md bg-slate-900 px-5 py-2.5 text-sm font-medium text-white transition hover:bg-slate-700 disabled:cursor-not-allowed disabled:bg-slate-300"
-          >
+        <div className="flex items-center gap-6 pt-1">
+          <button type="submit" disabled={!canSubmit} className="btn-primary">
             Analyze
           </button>
-          {status.kind === "submitting" && <Loading label="Analyzing…" />}
+          {status.kind === "submitting" && <Loading />}
         </div>
       </form>
     </Card>

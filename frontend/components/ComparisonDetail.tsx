@@ -1,15 +1,5 @@
 "use client";
 
-/**
- * Comparison detail view (Epic 7).
- *
- * Fetches one full comparison by id and renders it. It reuses the existing
- * <AnalysisResult /> component for the score/skills/summary/cover-letter
- * display, and additionally shows the original inputs (resume + job text).
- *
- * Keeps loading and error states (including a friendly 404 message).
- */
-
 import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
 
@@ -36,7 +26,7 @@ export function ComparisonDetail({ id }: { id: number }) {
     } catch (err) {
       const notFound = err instanceof ApiError && err.status === 404;
       const message =
-        err instanceof ApiError ? err.message : "Failed to load comparison.";
+        err instanceof ApiError ? err.message : "Failed to load.";
       setState({ kind: "error", message, notFound });
     }
   }, [id]);
@@ -48,7 +38,7 @@ export function ComparisonDetail({ id }: { id: number }) {
   if (state.kind === "loading") {
     return (
       <Card>
-        <Loading label="Loading comparison…" />
+        <Loading />
       </Card>
     );
   }
@@ -57,15 +47,13 @@ export function ComparisonDetail({ id }: { id: number }) {
     return (
       <Card>
         <ErrorMessage
-          title={state.notFound ? "Comparison not found" : "Could not load"}
+          title={state.notFound ? "Not found" : "Error"}
           details={state.message}
           onRetry={state.notFound ? undefined : load}
         />
-        <div className="mt-4">
-          <Link href="/history" className="text-sm font-medium underline">
-            ← Back to history
-          </Link>
-        </div>
+        <Link href="/history" className="btn-secondary mt-6 inline-flex">
+          Back
+        </Link>
       </Card>
     );
   }
@@ -73,30 +61,31 @@ export function ComparisonDetail({ id }: { id: number }) {
   const { data } = state;
 
   return (
-    <div className="space-y-6">
-      <Card title="Analysis result">
+    <div className="space-y-8">
+      <Card title="Analysis">
         <AnalysisResult result={data} />
       </Card>
 
-      <Card title="Original inputs">
-        <div className="space-y-4">
+      <Card title="Source material">
+        <div className="space-y-8">
           <div>
-            <h4 className="mb-1 text-sm font-semibold">Job description</h4>
-            <pre className="max-h-48 overflow-auto whitespace-pre-wrap rounded-lg bg-slate-50 p-3 text-sm text-slate-700">
+            <p className="label-caps mb-3">Job description</p>
+            <pre className="max-h-48 overflow-auto whitespace-pre-wrap rounded-xl border border-[var(--border)] bg-[var(--bg)] p-4 text-sm leading-relaxed text-[var(--text-muted)]">
               {data.job_description_text}
             </pre>
           </div>
+          <div className="divider" />
           <div>
-            <h4 className="mb-1 text-sm font-semibold">Resume text</h4>
-            <pre className="max-h-48 overflow-auto whitespace-pre-wrap rounded-lg bg-slate-50 p-3 text-sm text-slate-700">
+            <p className="label-caps mb-3">Resume</p>
+            <pre className="max-h-48 overflow-auto whitespace-pre-wrap rounded-xl border border-[var(--border)] bg-[var(--bg)] p-4 text-sm leading-relaxed text-[var(--text-muted)]">
               {data.resume_text}
             </pre>
           </div>
         </div>
       </Card>
 
-      <Link href="/history" className="text-sm font-medium underline">
-        ← Back to history
+      <Link href="/history" className="btn-secondary inline-flex">
+        Back to history
       </Link>
     </div>
   );

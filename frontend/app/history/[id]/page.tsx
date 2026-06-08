@@ -1,9 +1,4 @@
-/**
- * Comparison detail route: /history/[id]
- *
- * In Next.js 15 `params` is async, so we await it, parse the id, and hand it to
- * the <ComparisonDetail /> client component which fetches and renders the data.
- */
+import Link from "next/link";
 
 import { ComparisonDetail } from "@/components/ComparisonDetail";
 
@@ -15,8 +10,16 @@ export default async function ComparisonDetailPage({
   const { id } = await params;
 
   return (
-    <main className="mx-auto flex max-w-3xl flex-col gap-6 px-6 py-12">
-      <h1 className="text-2xl font-bold">Comparison #{id}</h1>
+    <main className="mx-auto max-w-3xl px-6 py-16 sm:py-20">
+      <header className="animate-slide-up mb-12 flex items-center gap-5">
+        <Link href="/history" className="btn-ghost">
+          ← Back
+        </Link>
+        <div>
+          <p className="label-caps">Record</p>
+          <h1 className="mt-1 font-mono text-xl text-[var(--text)]">#{id}</h1>
+        </div>
+      </header>
       <ComparisonDetail id={Number(id)} />
     </main>
   );
