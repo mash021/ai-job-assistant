@@ -175,7 +175,8 @@ ai-job-assistant/
 │   │       └── prompts/       # ✅ Prompt templates + loader
 │   ├── alembic/               # ✅ Migration environment + versions/
 │   ├── alembic.ini            # ✅ Alembic config
-│   ├── tests/                 #    Pytest test suite (later)
+│   ├── tests/                 # ✅ Pytest suite (unit + API integration)
+│   ├── pyproject.toml         # ✅ pytest + ruff config
 │   ├── requirements.txt       # ✅
 │   └── Dockerfile             # ✅
 │
@@ -525,6 +526,58 @@ it is self-contained. They are scaffolding for Epic 6.
 > default; OpenAI/Claude remain stubs until a later epic.
 
 ---
+
+## Testing & Quality (Epic 8)
+
+The project has automated tests, linting, and type-checking for both the backend
+and the frontend, plus a CI workflow that runs them on every push/PR.
+
+### Backend
+
+- **Tests** with `pytest`. API/integration tests run against an **in-memory
+  SQLite** database via FastAPI's `TestClient` (no PostgreSQL needed), made
+  possible by a dialect-agnostic JSON column type that renders as JSONB on
+  PostgreSQL and JSON elsewhere.
+- **Linting** with `ruff`.
+
+```bash
+# With the stack running (recommended)
+docker-compose exec backend pytest
+docker-compose exec backend ruff check .
+
+# Or locally
+cd backend && pip install -r requirements.txt && pytest && ruff check .
+```
+
+Covers: skill extraction, file parsing, the mock provider, the provider factory,
+and the comparisons API (create/list/detail/delete, 404s, and validation).
+
+### Frontend
+
+- **Tests** with `Vitest` + `@testing-library/react` (jsdom).
+- **Linting** with ESLint (`next lint`) and **type-checking** with `tsc`.
+
+```bash
+docker-compose exec frontend npm run test       # Vitest
+docker-compose exec frontend npm run lint       # ESLint
+docker-compose exec frontend npm run typecheck  # tsc --noEmit
+
+# Or locally
+cd frontend && npm install && npm run test && npm run lint && npm run typecheck
+```
+
+> Tip: run `tsc --noEmit` (the `typecheck` script) rather than `next build`
+> against a running dev container — a production build can corrupt the dev
+> server's `.next` cache.
+
+### Continuous Integration
+
+`.github/workflows/ci.yml` defines two jobs that run on pushes and PRs to
+`main`:
+
+- **backend** — install deps, `ruff check`, `pytest`.
+- **frontend** — `npm ci`, `npm run lint`, `npm run typecheck`, `npm run test`,
+  `npm run build`.
 
 ## MVP Scope
 

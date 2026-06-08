@@ -15,4 +15,10 @@ node_modules/
 .next/
 npm-debug.log*
 yarn-error.log*
+*.tsbuildinfo
 .DS_Store
+
+# ----- Testing -----
+.pytest_cache/
+.coverage
+coverage/

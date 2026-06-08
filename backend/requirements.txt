@@ -15,3 +15,8 @@ psycopg2-binary==2.9.10     # PostgreSQL driver
 # ----- File parsing -----
 pypdf==5.1.0                # Extract text from uploaded PDF resumes
 python-multipart==0.0.20    # Required by FastAPI to parse multipart/form-data (uploads)
+
+# ----- Testing & quality -----
+pytest==8.3.4               # Test runner
+httpx==0.28.1               # Used by FastAPI's TestClient for API tests
+ruff==0.8.4                 # Fast linter / formatter

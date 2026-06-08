@@ -1,0 +1,24 @@
+# Backend tooling configuration (pytest + ruff).
+
+[tool.pytest.ini_options]
+# Where tests live and how they are discovered.
+testpaths = ["tests"]
+python_files = ["test_*.py"]
+addopts = "-q"
+
+[tool.ruff]
+# Keep line length generous; target the runtime Python version.
+line-length = 100
+target-version = "py311"
+
+[tool.ruff.lint]
+# A sensible default rule set: pyflakes (F), pycodestyle (E/W), isort (I),
+# bugbear (B), and pyupgrade (UP).
+select = ["E", "F", "W", "I", "B", "UP"]
+# B008: calling Depends()/File()/Form() in argument defaults is the intended,
+# idiomatic FastAPI pattern, so we allow it.
+ignore = ["B008"]
+
+[tool.ruff.lint.per-file-ignores]
+# Test files may use assert and slightly looser conventions.
+"tests/*" = ["B011"]

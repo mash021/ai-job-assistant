@@ -124,17 +124,17 @@ A detailed, epic-based checklist for tracking progress. Each **epic** maps rough
 
 ---
 
-## Epic 8 — Testing & Quality
+## Epic 8 — Testing & Quality ✅
 
 **Goal:** Confidence and maintainability.
 
-- [ ] Backend unit tests (parsing, services)
-- [ ] Backend tests for the Mock provider
-- [ ] Backend API/integration tests
-- [ ] Frontend component tests
-- [ ] Configure linting (frontend + backend)
-- [ ] Configure type checking (TypeScript + mypy)
-- [ ] Set up CI pipeline (lint + test)
+- [x] Backend unit tests (parsing, services/skills)
+- [x] Backend tests for the Mock provider (+ factory)
+- [x] Backend API/integration tests (SQLite + TestClient)
+- [x] Frontend component tests (Vitest + React Testing Library)
+- [x] Configure linting (ruff for backend, ESLint for frontend)
+- [x] Configure type checking (TypeScript `tsc --noEmit`)
+- [x] Set up CI pipeline (GitHub Actions: lint + types + test + build)
 
 ---
 
@@ -180,6 +180,6 @@ A detailed, epic-based checklist for tracking progress. Each **epic** maps rough
 | 5 — AI Provider Layer         | Done (mock)   |
 | 6 — Core Feature: Analyze     | Done          |
 | 7 — Persistence & History     | Done          |
-| 8 — Testing & Quality         | Not started   |
+| 8 — Testing & Quality         | Done          |
 | 9 — Deployment                | Not started   |
 | 10 — Future Improvements      | Backlog       |

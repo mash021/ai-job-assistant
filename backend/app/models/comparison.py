@@ -9,11 +9,17 @@ they are populated later (Epic 5/6) once the analysis pipeline exists.
 
 from datetime import datetime
 
-from sqlalchemy import DateTime, Integer, String, Text, func
+from sqlalchemy import JSON, DateTime, Integer, String, Text, func
 from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.orm import Mapped, mapped_column
 
 from app.db.base import Base
+
+# Dialect-agnostic JSON column: renders as JSONB on PostgreSQL (production) and
+# plain JSON elsewhere (e.g. SQLite during tests). This keeps the production DDL
+# identical to the existing migrations while letting the test suite run without a
+# PostgreSQL server.
+JSONColumn = JSON().with_variant(JSONB(), "postgresql")
 
 
 class Comparison(Base):
@@ -27,17 +33,17 @@ class Comparison(Base):
     job_description_text: Mapped[str] = mapped_column(Text, nullable=False)
 
     # ----- Parsing results (Epic 4) -----
-    # Skills detected via keyword matching. Stored as a JSONB object of the form
-    # {"resume": [...], "job_description": [...]}. This is NOT the AI skill-gap
-    # analysis (that is `missing_skills`, computed in a later epic).
-    extracted_skills: Mapped[dict | None] = mapped_column(JSONB, nullable=True)
+    # Skills detected via keyword matching. Stored as JSON object of the form
+    # {"resume": [...], "job_description": [...], "matched": [...]}. This is NOT
+    # the AI skill-gap analysis (that is `missing_skills`).
+    extracted_skills: Mapped[dict | None] = mapped_column(JSONColumn, nullable=True)
 
     # ----- AI results (populated by the analysis flow, Epic 6) -----
     # Match score from 0–100.
     score: Mapped[int | None] = mapped_column(Integer, nullable=True)
     # List of skills present in the job but missing from the resume.
-    # Stored as JSONB so PostgreSQL can index/query it efficiently.
-    missing_skills: Mapped[list | None] = mapped_column(JSONB, nullable=True)
+    # Stored as JSON so PostgreSQL can index/query it efficiently (JSONB).
+    missing_skills: Mapped[list | None] = mapped_column(JSONColumn, nullable=True)
     # Short human-readable explanation of the result.
     summary: Mapped[str | None] = mapped_column(Text, nullable=True)
     # The generated cover letter text.

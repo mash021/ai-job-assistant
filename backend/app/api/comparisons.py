@@ -12,9 +12,8 @@ Flow (Epic 4 + Epic 6):
 from __future__ import annotations
 
 from fastapi import APIRouter, Depends, File, Form, HTTPException, UploadFile, status
-from sqlalchemy.orm import Session
-
 from sqlalchemy import select
+from sqlalchemy.orm import Session
 
 from app.ai.factory import UnknownProviderError, get_ai_provider
 from app.core.logging import get_logger
@@ -202,7 +201,11 @@ def list_comparisons(db: Session = Depends(get_db)) -> list[Comparison]:
     Uses the compact `ComparisonListItem` schema so the history list stays
     lightweight (no resume/job text or cover letter).
     """
-    stmt = select(Comparison).order_by(Comparison.created_at.desc())
+    # Order by creation time, with id as a stable tiebreaker for records created
+    # within the same timestamp resolution.
+    stmt = select(Comparison).order_by(
+        Comparison.created_at.desc(), Comparison.id.desc()
+    )
     return list(db.scalars(stmt).all())
 
 

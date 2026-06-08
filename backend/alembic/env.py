@@ -8,8 +8,9 @@ This wires Alembic to our application so that:
 
 from logging.config import fileConfig
 
-from alembic import context
 from sqlalchemy import engine_from_config, pool
+
+from alembic import context
 
 # Import settings and the metadata that knows about all models.
 from app.core.config import settings
