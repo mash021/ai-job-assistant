@@ -2,6 +2,7 @@
 
 import { AnalysisVisuals } from "@/components/AnalysisVisuals";
 import { CopyButton } from "@/components/CopyButton";
+import { DownloadCoverLetterPdf } from "@/components/DownloadCoverLetterPdf";
 import { SkillBadge } from "@/components/SkillBadge";
 import type { Comparison } from "@/lib/types";
 
@@ -60,10 +61,16 @@ export function AnalysisResult({
       </div>
 
       <div className="space-y-4">
-        <div className="flex items-center justify-between">
+        <div className="flex flex-wrap items-center justify-between gap-3">
           <p className="label-caps">Cover letter</p>
           {result.cover_letter && (
-            <CopyButton text={result.cover_letter} label="Copy" />
+            <div className="flex flex-wrap items-center gap-2">
+              <CopyButton text={result.cover_letter} label="Copy" />
+              <DownloadCoverLetterPdf
+                coverLetter={result.cover_letter}
+                jobDescription={result.job_description_text}
+              />
+            </div>
           )}
         </div>
         <pre className="max-h-72 overflow-auto whitespace-pre-wrap rounded-xl border border-[var(--border)] bg-[var(--bg)] p-5 text-sm leading-relaxed text-[var(--text-muted)]">
