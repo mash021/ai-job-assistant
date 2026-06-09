@@ -58,10 +58,14 @@ services:
     environment:
       # The browser reaches the backend via the host-published port.
       NEXT_PUBLIC_BACKEND_URL: ${NEXT_PUBLIC_BACKEND_URL:-http://localhost:8000}
+      # Avoid macOS Docker bind-mount file watcher deadlocks (os error 35).
+      WATCHPACK_POLLING: "true"
+      CHOKIDAR_USEPOLLING: "true"
     volumes:
-      # Mount source for hot-reload, but keep the container's node_modules.
-      - ./frontend:/app
+      # :delegated reduces macOS virtiofs contention; keep build artifacts off the bind mount.
+      - ./frontend:/app:delegated
       - /app/node_modules
+      - frontend_next:/app/.next
     # Re-sync deps when package.json changes (node_modules lives in a Docker volume).
     command: sh -c "npm install && npm run dev -- -H 0.0.0.0"
     depends_on:
@@ -70,3 +74,4 @@ services:
 # Named volume so database data survives `docker-compose down` (without -v).
 volumes:
   postgres_data:
+  frontend_next:

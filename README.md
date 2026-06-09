@@ -57,21 +57,47 @@ The user journey looks like this:
 - **AI Match Score** — A numeric compatibility score with a short explanation.
 - **Skill Gap Analysis** — Highlights skills present in the job description but missing from the resume.
 - **Cover Letter Generation** — Produces a personalized cover letter draft.
+- **PDF Export** — Save the cover letter as a professional business letter PDF (`@react-pdf/renderer`).
+- **3D Analysis Charts** — Interactive score tower and skill bars built with Three.js (`@react-three/fiber`).
+- **Skill Badges** — Color-coded skill chips with icons (`react-icons`).
+- **Dark / Light Theme** — System-aware theme toggle with CSS variables.
 - **Mock AI Provider** — Run the whole app locally without API keys or cost.
+- **OpenAI Provider** — Real Chat Completions integration (switch via `AI_PROVIDER=openai`).
 - **History** — Saved comparisons stored in PostgreSQL for later review.
 
 ---
 
 ## Tech Stack
 
-| Layer        | Technology                                              |
-| ------------ | ------------------------------------------------------- |
-| **Frontend** | Next.js, TypeScript, Tailwind CSS                       |
-| **Backend**  | FastAPI, Python                                         |
-| **Database** | PostgreSQL                                              |
-| **AI**       | Claude / OpenAI provider, plus a Mock provider for dev  |
-| **DevOps**   | Docker, docker-compose                                  |
-| **Hosting**  | Vercel (frontend), container host (backend + database)  |
+| Layer        | Technology |
+| ------------ | ---------- |
+| **Frontend** | Next.js 15 (App Router), React 19, TypeScript, Tailwind CSS |
+| **3D / Viz** | Three.js, `@react-three/fiber`, `@react-three/drei` |
+| **PDF**      | `@react-pdf/renderer` |
+| **Icons**    | `react-icons` |
+| **Frontend tests** | Vitest, Testing Library, jsdom |
+| **Backend**  | FastAPI, Python 3.11, Pydantic Settings |
+| **Database** | PostgreSQL, SQLAlchemy 2, Alembic |
+| **Parsing**  | `pypdf` (resume PDF extraction) |
+| **AI**       | Mock provider (default), OpenAI (`openai` SDK), Claude stub |
+| **Quality**  | pytest, ruff (backend); ESLint, tsc (frontend) |
+| **CI**       | GitHub Actions |
+| **DevOps**   | Docker, docker-compose |
+| **Hosting**  | Vercel (frontend), Railway (backend + PostgreSQL) |
+
+### Frontend libraries in detail
+
+| Library | Role in this project |
+| ------- | -------------------- |
+| **Next.js 15** | App Router, SSR/CSR pages (`/`, `/history`, `/history/[id]`) |
+| **React 19** | Client components for forms, results, charts, theme |
+| **Tailwind CSS** | Utility-first styling + custom CSS variables for theming |
+| **Three.js** | WebGL 3D engine for analysis visualizations |
+| **`@react-three/fiber`** | React renderer for Three.js scenes |
+| **`@react-three/drei`** | Helpers (lights, text, controls) for 3D charts |
+| **`@react-pdf/renderer`** | Client-side PDF generation for cover letters |
+| **`react-icons`** | Skill and UI icons mapped in `lib/skillIcons.tsx` |
+| **Vitest** | Unit/component tests (`CopyButton`, `SkillBadge`, PDF button, …) |
 
 ---
 
@@ -114,9 +140,7 @@ The system follows a clean, decoupled client–server architecture.
 
 ## Folder Structure
 
-> **Status:** Epic 1 (Infrastructure & DevOps Foundation) is complete. The files
-> marked ✅ exist now. Items without a mark are part of the **planned/target**
-> structure and arrive in later epics.
+> **Status:** Core epics (0–9) are implemented. Files marked ✅ exist in the repo today.
 
 ```
 ai-job-assistant/
@@ -127,28 +151,42 @@ ai-job-assistant/
 ├── .env.example               # ✅ Sample environment variables
 ├── .gitignore                 # ✅
 │
-├── frontend/                  # Next.js + TypeScript + Tailwind
+├── frontend/                  # Next.js + React 19 + TypeScript + Tailwind
 │   ├── app/                   # ✅ App Router pages and layouts
-│   │   ├── layout.tsx         # ✅ Root layout + top nav (Analyze/History)
-│   │   ├── page.tsx           # ✅ Landing page (features + analyze + health)
+│   │   ├── layout.tsx         # ✅ Root layout + nav + theme script
+│   │   ├── page.tsx           # ✅ Landing page (analyze + health)
 │   │   ├── history/           # ✅ History feature routes
 │   │   │   ├── page.tsx       # ✅ /history (list)
 │   │   │   └── [id]/page.tsx  # ✅ /history/[id] (detail)
-│   │   └── globals.css        # ✅ Tailwind entry styles
+│   │   └── globals.css        # ✅ Tailwind + theme CSS variables
 │   ├── components/            # ✅ Reusable UI components
-│   │   ├── Card.tsx           # ✅ Card container
-│   │   ├── Loading.tsx        # ✅ Spinner / loading state
-│   │   ├── ErrorMessage.tsx   # ✅ Error state + retry
-│   │   ├── HealthCheck.tsx    # ✅ Backend connectivity widget
+│   │   ├── charts/            # ✅ Three.js visualizations
+│   │   │   ├── AnalysisCharts3D.tsx  # Score tower + skill bars
+│   │   │   └── ChartErrorBoundary.tsx
 │   │   ├── AnalyzeForm.tsx    # ✅ Resume upload + job description form
-│   │   ├── AnalysisResult.tsx # ✅ Score, skills, cover letter display
+│   │   ├── AnalysisResult.tsx # ✅ Score, skills, cover letter, charts
+│   │   ├── AnalysisVisuals.tsx # ✅ Lazy-loaded 3D chart wrapper
+│   │   ├── AnalysisStatsPanel.tsx
+│   │   ├── DownloadCoverLetterPdf.tsx # ✅ Save PDF button
+│   │   ├── SkillBadge.tsx     # ✅ Skill chip with icon
+│   │   ├── ThemeToggle.tsx    # ✅ Dark/light mode switch
+│   │   ├── ThemeScript.tsx    # ✅ No-flash theme on load
+│   │   ├── Navbar.tsx
 │   │   ├── HistoryList.tsx    # ✅ Saved comparisons list + delete
-│   │   ├── ComparisonDetail.tsx # ✅ Detail view (reuses AnalysisResult)
-│   │   └── CopyButton.tsx     # ✅ Copy-to-clipboard button
+│   │   ├── ComparisonDetail.tsx
+│   │   ├── HealthCheck.tsx
+│   │   ├── CopyButton.tsx
+│   │   ├── Card.tsx, Loading.tsx, ErrorMessage.tsx, Icons.tsx
+│   │   └── __tests__/         # ✅ Vitest component tests
 │   ├── lib/                   # ✅ API client, config, shared types
 │   │   ├── api.ts             # ✅ Typed fetch wrapper + ApiError
 │   │   ├── config.ts          # ✅ Reads NEXT_PUBLIC_ env vars
-│   │   └── types.ts           # ✅ Shared TypeScript types
+│   │   ├── types.ts           # ✅ Shared TypeScript types
+│   │   ├── skillIcons.tsx     # ✅ Skill → react-icons mapping
+│   │   ├── analysisStats.ts   # ✅ Chart data helpers
+│   │   ├── extractJobContext.ts
+│   │   ├── prepareCoverLetterForPdf.ts
+│   │   └── coverLetterPdfDocument.tsx # ✅ @react-pdf document
 │   ├── package.json           # ✅
 │   ├── tsconfig.json          # ✅
 │   ├── next.config.js         # ✅
@@ -178,8 +216,8 @@ ai-job-assistant/
 │   │   └── ai/                # ✅ Provider abstraction
 │   │       ├── base.py        # ✅ AIProvider interface + AnalysisResult
 │   │       ├── mock_provider.py    # ✅ Deterministic mock provider
-│   │       ├── openai_provider.py  # ✅ OpenAI stub (Epic 6)
-│   │       ├── claude_provider.py  # ✅ Claude stub (Epic 6)
+│   │       ├── openai_provider.py  # ✅ OpenAI Chat Completions
+│   │       ├── claude_provider.py  # ✅ Claude stub
 │   │       ├── factory.py     # ✅ Provider selection via AI_PROVIDER
 │   │       └── prompts/       # ✅ Prompt templates + loader
 │   ├── alembic/               # ✅ Migration environment + versions/
@@ -345,21 +383,20 @@ uvicorn app.main:app --reload
 
 ## Frontend Setup & Structure
 
-The frontend is a Next.js (App Router) app written in TypeScript and styled with
-Tailwind CSS (Epic 3). It is organized for clarity and reuse:
+The frontend is a **Next.js 15** (App Router) app on **React 19**, written in
+TypeScript and styled with **Tailwind CSS**. Beyond the core form/results flow,
+it uses **Three.js** for 3D analysis charts, **`@react-pdf/renderer`** for cover
+letter PDFs, and **`react-icons`** for skill badges.
 
+- **`app/`** — routes and layout (`/`, `/history`, `/history/[id]`).
+- **`components/`** — UI building blocks:
+  - `AnalyzeForm`, `AnalysisResult`, `HistoryList`, `ComparisonDetail`
+  - `AnalysisVisuals` + `charts/AnalysisCharts3D` (Three.js score tower & skill bars)
+  - `DownloadCoverLetterPdf`, `SkillBadge`, `ThemeToggle`
 - **`lib/`** — non-UI logic:
-  - `config.ts` centralizes `NEXT_PUBLIC_` environment variables.
-  - `types.ts` holds shared types that mirror the backend API contract.
-  - `api.ts` is a typed `fetch` wrapper that throws `ApiError` on failure, so
-    components get consistent error handling.
-- **`components/`** — reusable presentational pieces: `Card`, `Loading`,
-  `ErrorMessage`, and `HealthCheck` (which proves frontend↔backend connectivity).
-- **`app/`** — routes and layout. `page.tsx` is the landing page: a hero, a
-  preview of upcoming features ("Coming soon"), and the live health check.
-
-> Resume upload and AI analysis are **not** implemented yet — the feature cards
-> on the landing page are previews for later epics.
+  - `api.ts`, `config.ts`, `types.ts` — API client and shared types
+  - `skillIcons.tsx`, `analysisStats.ts` — chart/badge helpers
+  - `coverLetterPdfDocument.tsx`, `extractJobContext.ts` — PDF export
 
 ### Running the frontend
 
@@ -387,9 +424,10 @@ The end-to-end value loop: submit a resume + job description, and the backend
 parses the inputs, runs the AI provider, and returns a **match score**, **skill
 gaps**, and a **tailored cover letter** — then saves the record.
 
-> Analysis currently uses the deterministic **mock provider** (Epic 6). Real
-> OpenAI/Claude calls arrive in a later epic. No authentication and no history
-> page yet.
+> Default provider is **mock** (free, deterministic). Set `AI_PROVIDER=openai`
+> for real OpenAI calls when billing is active. Claude remains a stub.
+> Authentication is not implemented — history is available to all visitors on the
+> same database.
 
 ### What happens on submit
 
@@ -412,8 +450,9 @@ gaps**, and a **tailored cover letter** — then saves the record.
 2. Open http://localhost:3000.
 3. In **"Analyze a resume against a job"**, choose a `.pdf` or `.txt` resume,
    paste a job description, and click **Analyze**.
-4. You'll see the **match score**, **matched** and **missing** skills, a short
-   **summary**, and the generated **cover letter** with a **Copy** button.
+4. You'll see the **match score**, **3D charts**, **matched** and **missing**
+   skill badges, a short **summary**, and the generated **cover letter** with
+   **Copy** and **Save PDF** buttons.
 
 ### Applying migrations
 
@@ -499,7 +538,7 @@ the `AI_PROVIDER` environment variable — no code changes required.
                               ┌───────────────────────────┴───────────────┐
                               ▼                  ▼                          ▼
                        MockAIProvider     OpenAIProvider            ClaudeProvider
-                       (deterministic)    (stub → Epic 6)           (stub → Epic 6)
+                       (deterministic)    (Chat Completions)        (stub)
 ```
 
 - **`AIProvider`** (interface): one method, `analyze(resume_text,
@@ -518,9 +557,10 @@ the `AI_PROVIDER` environment variable — no code changes required.
   overlap and renders a templated summary + cover letter. No API keys, no cost —
   ideal for local development, tests, and CI. This is the default
   (`AI_PROVIDER=mock`).
-- **OpenAI Provider** — **Stub** for now. Recognized by the factory but
-  `analyze()` raises `NotImplementedError`. Real calls arrive in Epic 6.
-- **Claude Provider** — **Stub** for now, same as above.
+- **OpenAI Provider** — **Implemented.** Uses prompt templates in
+  `app/ai/prompts/` and the `openai` Python SDK. Requires `OPENAI_API_KEY` and
+  active billing; quota/auth errors surface as clear API messages.
+- **Claude Provider** — **Stub** for now (`NotImplementedError`).
 
 ### Prompt templates
 
@@ -530,9 +570,8 @@ Prompt text for the real providers lives in `app/ai/prompts/` as editable
 (`prompts/__init__.py`) renders them. **The mock provider does not use these** —
 it is self-contained. They are scaffolding for Epic 6.
 
-> **Note:** As of Epic 6 the provider is wired into `POST /api/comparisons`,
-> which calls `analyze()` and persists the result. The mock provider is the
-> default; OpenAI/Claude remain stubs until a later epic.
+> **Note:** `POST /api/comparisons` calls `analyze()` and persists the result.
+> Use `AI_PROVIDER=mock` for local dev and CI; switch to `openai` when ready.
 
 ---
 
